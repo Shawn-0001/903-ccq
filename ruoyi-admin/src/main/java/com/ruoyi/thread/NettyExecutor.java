@@ -1,6 +1,9 @@
 package com.ruoyi.thread;
 
 import com.ruoyi.netty.NettyServer;
+import com.ruoyi.netty.NettyServerHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -13,13 +16,8 @@ public class NettyExecutor {
      * netty服务端
      */
     public static NettyServer nettyServer;
-//    private static ThreadServer threadServer;
 
-//    @Autowired
-//    private void setThreadServer(ThreadServer threadServer) {
-//        this.threadServer = threadServer;
-//
-//    }
+    private static final Logger logger = LoggerFactory.getLogger(NettyExecutor.class);
 
     @Autowired
     private void setNettyServer(NettyServer nettyServer) {
@@ -28,8 +26,7 @@ public class NettyExecutor {
 
     @Async("threadPoolTaskExecutor")
     public static void nettyServerRun() {
+        logger.debug("Starting netty server!");
         nettyServer.serverRun();
-        System.out.println("Starting netty server!");
     }
-
 }

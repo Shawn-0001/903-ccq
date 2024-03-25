@@ -24,11 +24,8 @@ public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline channelPipeline = ch.pipeline();
 
-        // 分隔符解码器
-//        ByteBuf delimiter = Unpooled.copiedBuffer(nettyInit.getSeparator().getBytes());
-//        channelPipeline .addLast(new DelimiterBasedFrameDecoder(nettyInit.getDeCodeSize(), delimiter));
-        channelPipeline .addLast(new FixedLengthFrameDecoder(nettyInit.getDeCodeSize()));
-        // 字符串解码 和 编码
+        // 定长解码
+//        channelPipeline .addLast(new FixedLengthFrameDecoder(nettyInit.getDeCodeSize()));
         //解码过程
         channelPipeline.addLast(new MyDecoder());
         // 处理器

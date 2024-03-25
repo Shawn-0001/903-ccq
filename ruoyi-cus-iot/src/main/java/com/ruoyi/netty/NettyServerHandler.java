@@ -1,16 +1,23 @@
 package com.ruoyi.netty;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.iot.domain.CusIoTCurrent;
+import com.ruoyi.iot.service.ICusIoTCurrentService;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.jtransforms.fft.DoubleFFT_1D;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Arrays;
 
 @Component
@@ -18,16 +25,20 @@ import java.util.Arrays;
 public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
+    @Autowired
+    private ICusIoTCurrentService cusIoTCurrentService;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        // 初始化
+        CusIoTCurrent cusIoTCurrent = new CusIoTCurrent();
+        // 获取提交的IP 地址
+        InetSocketAddress  ipSocket = (InetSocketAddress )ctx.channel().remoteAddress();
+        String IP = ipSocket.getAddress().getHostAddress();
+        cusIoTCurrent.setCreateBy(IP);
+
         try {
             byte[] bytes = (byte[]) msg;
-//            String str = bytesToHexString(bytes);
-//            logger.debug("解包后的数据（16进制数据）: " + str);
-//            logger.debug("解包后的数据长度（16进制数据）: " + str.length());
-            logger.info("解包后的数据长度（字节数据）: " + bytes.length);
-
             // 开始解析数据
             // begin byte数字截取起始位置
             int begin = 0;
@@ -38,13 +49,14 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 2字节 count = 2; 不使用 68 3F
             count = 2;
             // 在全部字节数组中， 截取头部2字节
-            byte[] segment_1 = subBytes(bytes, begin, count);
+//            byte[] segment_1 = subBytes(bytes, begin, count);
             // 解析成16进制， 判断是否合规。
-            String str1 = bytesToHexString(segment_1);
-            if (!(StringUtils.equals(str1, "683f") || StringUtils.equals(str1, "683F"))) {
-                logger.debug("第【1】段数据解析错误， 期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
-                return;
-            }
+            // 无需再次判断， 首次解析前，decoder已经判断完头部标识符合要求。
+//            String str1 = bytesToHexString(segment_1);
+//            if (!(StringUtils.equals(str1, "683f") || StringUtils.equals(str1, "683F"))) {
+//                logger.debug("第【1】段数据解析错误， 期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
+//                return;
+//            }
             // 计算下一个段开始的位置
             begin = begin + count;
             logger.debug("第【1】段数据头校验通过，开始解析数据-->");
@@ -55,8 +67,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 在字节数组中截取该段的字节
             byte[] segment_2 = subBytes(bytes, begin, count);
             // 字节转int
-            // TODO
             int timestamp = bytesToInt(segment_2);
+            cusIoTCurrent.setTimestamp((long) timestamp);
             // 计算下一个段开始的位置
             begin = begin + count;
 
@@ -66,8 +78,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 在字节数组中截取该段的字节
             byte[] segment_3 = subBytes(bytes, begin, count);
             // 字节转字符串， 过滤掉为”0“的字节了
-            // TODO
             String deviceId = byteToStr(segment_3);
+            cusIoTCurrent.setDeviceId(deviceId);
             logger.debug("deviceId: " + deviceId);
             // 计算下一个段开始的位置
             begin = begin + count;
@@ -77,8 +89,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 长度： 2字节，count = 2; 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
             // 使用Bigdecimal 接收数据， 计算不丢失精度
             count = 2;
-            // TODO current_A_1需要傅里叶变换， 取结果，
-            // TODO current_A_2  周期2不需要进行傅里叶变换，直接存储
+            //  current_A_1需要傅里叶变换， 取结果，
+            //  current_A_2  周期2不需要进行傅里叶变换，直接存储
             BigDecimal[] current_A_1 = new BigDecimal[128];
             BigDecimal[] current_A_2 = new BigDecimal[128];
             // 电流要 除以2000 才是实际的值
@@ -89,6 +101,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 current_A_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIoTCurrent.setCurrentA1(Arrays.toString(current_A_1));
             // 电流A 周期1 进行傅里叶转换
             DoubleFFT_1D dftA1 = new DoubleFFT_1D(128);
             // Bigdecimal 数组转为double数组
@@ -106,24 +119,25 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 imaginaryPartA1[i] = currentA1[2 * i + 1];
             }
             // 结果取模： （实数平方+ 虚数平方）开根号：
-            // TODO 周期1处理的结果， 用于绘图 cur_fft
+            // 周期1处理的结果， 用于绘图 cur_fft
             double[] cur_fftA1 = new double[realPartA1.length];
             for (int i = 0; i < realPartA1.length; i++) {
                 cur_fftA1[i] = Math.sqrt(Math.pow(realPartA1[i], 2) + Math.pow(imaginaryPartA1[i], 2));
             }
+            cusIoTCurrent.setCurrentAFFT(Arrays.toString(cur_fftA1));
             // 周期2开始：
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 current_A_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
-
+            cusIoTCurrent.setCurrentA2(Arrays.toString(current_A_2));
             // 电流B
             // 长度： 2字节，count = 2; 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
             // 使用Bigdecimal 接收数据， 计算不丢失精度
             count = 2;
-            // TODO current_B_1 需要傅里叶变换， 取结果，
-            // TODO current_B_2 周期2不需要进行傅里叶变换，直接存储
+            // current_B_1 需要傅里叶变换， 取结果，
+            // current_B_2 周期2不需要进行傅里叶变换，直接存储
             BigDecimal[] current_B_1 = new BigDecimal[128];
             BigDecimal[] current_B_2 = new BigDecimal[128];
             for (int i = 0; i < 128; i++) {
@@ -133,6 +147,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 current_B_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIoTCurrent.setCurrentB1(Arrays.toString(current_B_1));
             // 电流B 周期1 进行傅里叶转换
             DoubleFFT_1D dftB1 = new DoubleFFT_1D(128);
             // Bigdecimal 数组转为double数组
@@ -140,6 +155,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             for (int i = 0; i < current_B_1.length; i++) {
                 currentB1[i] = current_B_1[i].doubleValue();
             }
+            cusIoTCurrent.setCurrentB1(Arrays.toString(currentB1));
             // 傅里叶转换
             dftB1.realForward(currentB1);
             // 源数据被改变， 获取虚数和实数两个部分
@@ -150,11 +166,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 imaginaryPartB1[i] = currentB1[2 * i + 1];
             }
             // 结果取模： （实数平方+ 虚数平方）开根号：
-            // TODO 周期1处理的结果， 用于绘图 cur_fft
+            // 周期1处理的结果， 用于绘图 cur_fft
             double[] cur_fftB1 = new double[realPartB1.length];
             for (int i = 0; i < realPartB1.length; i++) {
                 cur_fftB1[i] = Math.sqrt(Math.pow(realPartB1[i], 2) + Math.pow(imaginaryPartB1[i], 2));
             }
+            cusIoTCurrent.setCurrentBFFT(Arrays.toString(cur_fftB1));
             // 周期2开始：
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
@@ -163,13 +180,13 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 current_B_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
-
+            cusIoTCurrent.setCurrentB2(Arrays.toString(current_B_2));
             // 电流C
             // 长度： 2字节，count = 2; 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
             // 使用Bigdecimal 接收数据， 计算不丢失精度
             count = 2;
-            // TODO current_C_1 需要傅里叶变换， 取结果，
-            // TODO current_C_2 周期2不需要进行傅里叶变换，直接存储
+            // current_C_1 需要傅里叶变换， 取结果，
+            // current_C_2 周期2不需要进行傅里叶变换，直接存储
             BigDecimal[] current_C_1 = new BigDecimal[128];
             BigDecimal[] current_C_2 = new BigDecimal[128];
             for (int i = 0; i < 128; i++) {
@@ -179,6 +196,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 current_C_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIoTCurrent.setCurrentC1(Arrays.toString(current_C_1));
             // 电流C 周期1 进行傅里叶转换
             DoubleFFT_1D dftC1 = new DoubleFFT_1D(128);
             // Bigdecimal 数组转为double数组
@@ -196,11 +214,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 imaginaryPartC1[i] = currentC1[2 * i + 1];
             }
             // 结果取模： （实数平方+ 虚数平方）开根号：
-            // TODO 周期1处理的结果， 用于绘图 cur_fftC1
+            // 周期1处理的结果， 用于绘图 cur_fftC1
             double[] cur_fftC1 = new double[realPartC1.length];
             for (int i = 0; i < realPartC1.length; i++) {
                 cur_fftC1[i] = Math.sqrt(Math.pow(realPartC1[i], 2) + Math.pow(imaginaryPartC1[i], 2));
             }
+            cusIoTCurrent.setCurrentCFFT(Arrays.toString(cur_fftC1));
             // 周期2开始：
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
@@ -209,6 +228,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 current_C_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIoTCurrent.setCurrentC2(Arrays.toString(current_C_2));
+            // TODO update database
+            cusIoTCurrentService.insertCusIoTCurrent(cusIoTCurrent);
 
             // 电压A
             // 长度： 2字节，count = 2; 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
@@ -291,7 +313,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 解析成16进制， 判断是否合规。
             String str5 = bytesToHexString(segment_5);
             if (!(StringUtils.equals(str5, "683f") || StringUtils.equals(str5, "683F"))) {
-                logger.debug("第【2】段数据解析错误，期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
+                logger.debug("第【2】段数据解析错误，期望的数据头为 683F 或 683f， 得到的文件头为: " + str5);
                 return;
             }
             // 计算下一个段开始的位置
@@ -520,7 +542,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
      * @param bArray
      * @return
      */
-    public String bytesToHexString(byte[] bArray) {
+    public static String bytesToHexString(byte[] bArray) {
         StringBuffer sb = new StringBuffer(bArray.length);
         String sTemp;
         for (int i = 0; i < bArray.length; i++) {

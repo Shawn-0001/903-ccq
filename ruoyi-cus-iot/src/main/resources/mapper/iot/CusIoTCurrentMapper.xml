@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.CusIoTCurrentMapper">
+
+    <resultMap type="CusIoTCurrent" id="CusIoTCurrentResult">
+        <result property="id" column="id"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="currentA1" column="current_a_1"/>
+        <result property="currentA2" column="current_a_2"/>
+        <result property="currentAFFT" column="current_a_fft"/>
+        <result property="currentB1" column="current_b_1"/>
+        <result property="currentB2" column="current_b_2"/>
+        <result property="currentBFFT" column="current_b_fft"/>
+        <result property="currentC1" column="current_c_1"/>
+        <result property="currentC2" column="current_c_2"/>
+        <result property="currentCFFT" column="current_c_fft"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectCusIoTCurrentVo">
+        select id, timestamp, device_id, current_a_1, current_a_2, current_a_fft, current_b_1, current_b_2, current_b_fft, current_c_1,
+        current_c_2, current_c_fft, create_by, create_time, update_by, update_time from cus_iot_current
+    </sql>
+
+    <select id="selectCusIoTCurrentList" parameterType="CusIoTCurrent" resultMap="CusIoTCurrentResult">
+        <include refid="selectCusIoTCurrentVo"/>
+        <where>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null ">and device_id = #{deviceId}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCusIoTCurrentById" parameterType="Long" resultMap="CusIoTCurrentResult">
+        <include refid="selectCusIoTCurrentVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertCusIoTCurrent" parameterType="CusIoTCurrent" useGeneratedKeys="true" keyProperty="id">
+        insert into cus_iot_current
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="timestamp != null">timestamp,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="currentA1 != null">current_a_1,</if>
+            <if test="currentA2 != null">current_a_2,</if>
+            <if test="currentAFFT != null">current_a_fft,</if>
+            <if test="currentB1 != null">current_b_1,</if>
+            <if test="currentB2 != null">current_b_2,</if>
+            <if test="currentBFFT != null">current_b_fft,</if>
+            <if test="currentC1 != null">current_c_1,</if>
+            <if test="currentC2 != null">current_c_2,</if>
+            <if test="currentCFFT != null">current_c_fft,</if>
+            create_by,
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="currentA1 != null">#{currentA1},</if>
+            <if test="currentA2 != null">#{currentA2},</if>
+            <if test="currentAFFT != null">#{currentAFFT},</if>
+            <if test="currentB1 != null">#{currentB1},</if>
+            <if test="currentB2 != null">#{currentB2},</if>
+            <if test="currentBFFT != null">#{currentBFFT},</if>
+            <if test="currentC1 != null">#{currentC1},</if>
+            <if test="currentC2 != null">#{currentC2},</if>
+            <if test="currentCFFT != null">#{currentCFFT},</if>
+            #{createBy},
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateCusIoTCurrent" parameterType="CusIoTCurrent">
+        update cus_iot_current
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="currentA1 != null">current_a_1 = #{currentA1},</if>
+            <if test="currentA2 != null">current_a_2 = #{currentA2},</if>
+            <if test="currentAFFT != null">current_a_fft = #{currentAFFT},</if>
+            <if test="currentB1 != null">current_b_1 = #{currentB1},</if>
+            <if test="currentB2 != null">current_b_2 = #{currentB2},</if>
+            <if test="currentBFFT != null">current_b_fft = #{currentBFFT},</if>
+            <if test="currentC1 != null">current_c_1 = #{currentC1},</if>
+            <if test="currentC2 != null">current_c_2 = #{currentC2},</if>
+            <if test="currentCFFT != null">current_c_fft = #{currentCFFT},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCusIoTCurrentById" parameterType="Long">
+        delete from cus_iot_current where id = #{id}
+    </delete>
+
+    <delete id="deleteCusIoTCurrentByIds" parameterType="String">
+        delete from cus_iot_current where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

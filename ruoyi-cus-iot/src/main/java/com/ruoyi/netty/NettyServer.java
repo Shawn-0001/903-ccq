@@ -5,6 +5,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,7 @@ public class NettyServer {
     @Autowired
     private NettyServerInitializer nettyServerInitializer;
 
+    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
     @Autowired
     private NettyInit nettys;
@@ -38,9 +41,10 @@ public class NettyServer {
             // 绑定端口号
             ChannelFuture channelFuture = serverBootstrap.bind(nettys.getServerPort()).sync();
             // 可绑定多端口监听 当前版本只简单处理 只绑定一个端口
-            System.out.println("Netty服务已经启动,端口:" + nettys.getServerPort());
-            System.out.println("local ip" + channelFuture.channel().localAddress());
 
+            logger.debug("Netty服务已经启动,端口:" + nettys.getServerPort());
+            logger.debug("local ip" + channelFuture.channel().localAddress());
+            // 等待客户端关闭连接
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
