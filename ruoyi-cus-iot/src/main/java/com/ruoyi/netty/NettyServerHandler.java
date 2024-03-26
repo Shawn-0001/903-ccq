@@ -1,10 +1,8 @@
 package com.ruoyi.netty;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.iot.domain.CusIoTCurrent;
-import com.ruoyi.iot.service.ICusIoTCurrentService;
+import com.ruoyi.iot.domain.*;
+import com.ruoyi.iot.service.*;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,25 +15,59 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Arrays;
 
 @Component
 @ChannelHandler.Sharable
 public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
-
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
     @Autowired
     private ICusIoTCurrentService cusIoTCurrentService;
+    @Autowired
+    private ICusIotVoltageService cusIotVoltageService;
+    @Autowired
+    private ICusIotPowerDataService cusIotPowerDataService;
+    @Autowired
+    private ICusIotCurrentHarmonicService cusIotCurrentHarmonicService;
+    @Autowired
+    private ICusIotVoltageHarmonicService cusIotVoltageHarmonicService;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         // 初始化
+        // 电流数据
         CusIoTCurrent cusIoTCurrent = new CusIoTCurrent();
+        // 电压数据
+        CusIotVoltage cusIotVoltage = new CusIotVoltage();
+        // 功率数据 A:active_power:有功功率
+        CusIotPowerData cusIotPowerDataA = new CusIotPowerData();
+        cusIotPowerDataA.setType("A");
+        // 功率数据 R:reactive_power:无功功率
+        CusIotPowerData cusIotPowerDataR = new CusIotPowerData();
+        cusIotPowerDataR.setType("R");
+        // 功率数据 F:power_factor:功率因素
+        CusIotPowerData cusIotPowerDataF = new CusIotPowerData();
+        cusIotPowerDataF.setType("F");
+        // 谐波电压
+        CusIotVoltageHarmonic cusIotVoltageHarmonic = new CusIotVoltageHarmonic();
+        // 谐波电流
+        CusIotCurrentHarmonic cusIotCurrentHarmonic = new CusIotCurrentHarmonic();
+
         // 获取提交的IP 地址
-        InetSocketAddress  ipSocket = (InetSocketAddress )ctx.channel().remoteAddress();
+        InetSocketAddress ipSocket = (InetSocketAddress) ctx.channel().remoteAddress();
         String IP = ipSocket.getAddress().getHostAddress();
+        // 电流数据来源IP地址
         cusIoTCurrent.setCreateBy(IP);
+        // 电压数据来源IP地址
+        cusIotVoltage.setCreateBy(IP);
+        // 功率数据来源IP地址
+        cusIotPowerDataA.setCreateBy(IP);
+        cusIotPowerDataR.setCreateBy(IP);
+        cusIotPowerDataF.setCreateBy(IP);
+        // 谐波电压数据来源IP地址
+        cusIotVoltageHarmonic.setCreateBy(IP);
+        // 谐波电流数据来源IP地址
+        cusIotCurrentHarmonic.setCreateBy(IP);
 
         try {
             byte[] bytes = (byte[]) msg;
@@ -68,7 +100,20 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             byte[] segment_2 = subBytes(bytes, begin, count);
             // 字节转int
             int timestamp = bytesToInt(segment_2);
+            // 所有的表都需要设置这个timestamp字段
+            // 电流数据
             cusIoTCurrent.setTimestamp((long) timestamp);
+            // 电压数据
+            cusIotVoltage.setTimestamp((long) timestamp);
+            // 功率数据
+            cusIotPowerDataA.setTimestamp((long) timestamp);
+            cusIotPowerDataR.setTimestamp((long) timestamp);
+            cusIotPowerDataF.setTimestamp((long) timestamp);
+            // 谐波电压数据来源IP地址
+            cusIotVoltageHarmonic.setTimestamp((long) timestamp);
+            // 谐波电流数据来源IP地址
+            cusIotCurrentHarmonic.setTimestamp((long) timestamp);
+
             // 计算下一个段开始的位置
             begin = begin + count;
 
@@ -79,7 +124,20 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             byte[] segment_3 = subBytes(bytes, begin, count);
             // 字节转字符串， 过滤掉为”0“的字节了
             String deviceId = byteToStr(segment_3);
+            // 所有的表都需要设置这个timestamp字段
+            // 电流数据
             cusIoTCurrent.setDeviceId(deviceId);
+            // 电压数据
+            cusIotVoltage.setDeviceId(deviceId);
+            // 有功功率数据
+            cusIotPowerDataA.setDeviceId(deviceId);
+            cusIotPowerDataR.setDeviceId(deviceId);
+            cusIotPowerDataF.setDeviceId(deviceId);
+            // 谐波电压数据来源IP地址
+            cusIotVoltageHarmonic.setDeviceId(deviceId);
+            // 谐波电流数据来源IP地址
+            cusIotCurrentHarmonic.setDeviceId(deviceId);
+
             logger.debug("deviceId: " + deviceId);
             // 计算下一个段开始的位置
             begin = begin + count;
@@ -229,12 +287,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentC2(Arrays.toString(current_C_2));
-            // TODO update database
-            cusIoTCurrentService.insertCusIoTCurrent(cusIoTCurrent);
 
             // 电压A
             // 长度： 2字节，count = 2; 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
-            // TODO voltage_A_1 voltage_A_2
+            // voltage_A_1 voltage_A_2
             BigDecimal[] voltage_A_1 = new BigDecimal[128];
             BigDecimal[] voltage_A_2 = new BigDecimal[128];
             // 电流要 除以50 才是实际的值
@@ -246,16 +302,17 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 voltage_A_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIotVoltage.setVoltageA1(Arrays.toString(voltage_A_1));
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 voltage_A_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
-
+            cusIotVoltage.setVoltageA2(Arrays.toString(voltage_A_2));
             // 电压B
             // 长度： 2字节， 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
-            // TODO voltage_B_1 voltage_B_2
+            // voltage_B_1 voltage_B_2
             BigDecimal[] voltage_B_1 = new BigDecimal[128];
             BigDecimal[] voltage_B_2 = new BigDecimal[128];
             count = 2;
@@ -265,16 +322,17 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 voltage_B_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIotVoltage.setVoltageB1(Arrays.toString(voltage_B_1));
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 voltage_B_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
-
+            cusIotVoltage.setVoltageB2(Arrays.toString(voltage_B_2));
             // 电压C
             // 长度： 2字节， 128个点， 2个周期， 共 2*128*2=512个字节 , 2字节转short
-            // TODO voltage_C_1 voltage_C_2
+            //  voltage_C_1 voltage_C_2
             BigDecimal[] voltage_C_1 = new BigDecimal[128];
             BigDecimal[] voltage_C_2 = new BigDecimal[128];
             count = 2;
@@ -284,12 +342,14 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 voltage_C_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIotVoltage.setVoltageC1(Arrays.toString(voltage_C_1));
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 voltage_C_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide50, 4, RoundingMode.HALF_UP);
                 begin = begin + count;
             }
+            cusIotVoltage.setVoltageC2(Arrays.toString(voltage_C_2));
 
             // end
             // 第一段报文结束， 结束位 2字节， 校验 0D 0A
@@ -335,115 +395,150 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 有功功率
             // 4 字节 * 4 分辨率:0.01w 转int
             count = 4;
-            // TODO activePower
-            BigDecimal[] activePower = new BigDecimal[4];
+            //  activePower
             BigDecimal multiply001 = new BigDecimal("0.01");
-            for (int i = 0; i < 4; i++) {
-                byte[] segment_i = subBytes(bytes, begin, count);
-                activePower[i] = new BigDecimal(bytesToInt(segment_i)).multiply(multiply001);
-                begin = begin + count;
-            }
+            BigDecimal activePowerA = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataA.setPhaseA(activePowerA.toString());
+
+            BigDecimal activePowerB = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataA.setPhaseB(activePowerB.toString());
+
+            BigDecimal activePowerC = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataA.setPhaseC(String.valueOf(activePowerC));
+
+            BigDecimal activePowerTotal = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataA.setTotal(String.valueOf(activePowerTotal));
 
             // 无功功率
             // 4 字节 * 4  分辨率:0.01var 转int
             count = 4;
-            // TODO reactivePower
-            BigDecimal[] reactivePower = new BigDecimal[4];
-            for (int i = 0; i < 4; i++) {
-                byte[] segment_i = subBytes(bytes, begin, count);
-                reactivePower[i] = new BigDecimal(bytesToInt(segment_i)).multiply(multiply001);
-                begin = begin + count;
-            }
+            // reactivePower
+            BigDecimal reactivePowerA = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataR.setPhaseA(reactivePowerA.toString());
+
+            BigDecimal reactivePowerB = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataR.setPhaseB(reactivePowerB.toString());
+
+            BigDecimal reactivePowerC = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataR.setPhaseC(reactivePowerC.toString());
+
+            BigDecimal reactivePowerTotal = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply001);
+            begin = begin + count;
+            cusIotPowerDataR.setTotal(String.valueOf(reactivePowerTotal));
 
             // 功率因数
             // 4 字节 * 4 分辨率:0.001 转int
             count = 4;
-            // TODO powerFactor
-            BigDecimal[] powerFactor = new BigDecimal[4];
+            //  powerFactor
             BigDecimal multiply0001 = new BigDecimal("0.001");
-            for (int i = 0; i < 4; i++) {
-                byte[] segment_i = subBytes(bytes, begin, count);
-                powerFactor[i] = new BigDecimal(bytesToInt(segment_i)).multiply(multiply0001);
-                begin = begin + count;
-            }
-
+            BigDecimal powerFactorA = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply0001);
+            begin = begin + count;
+            cusIotPowerDataF.setPhaseA(powerFactorA.toString());
+            BigDecimal powerFactorB = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply0001);
+            begin = begin + count;
+            cusIotPowerDataF.setPhaseB(powerFactorB.toString());
+            BigDecimal powerFactorC = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply0001);
+            begin = begin + count;
+            cusIotPowerDataF.setPhaseC(powerFactorC.toString());
+            BigDecimal powerFactorTotal = new BigDecimal(bytesToInt(subBytes(bytes, begin, count))).multiply(multiply0001);
+            begin = begin + count;
+            cusIotPowerDataF.setTotal(String.valueOf(powerFactorTotal));
             // A相谐波电压
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_V_A
+            // harmonic_V_A
             BigDecimal[] harmonic_V_A = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_V_A[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
-
+            cusIotVoltageHarmonic.setHarmonicA(Arrays.toString(harmonic_V_A));
             // B相谐波电压
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_V_B
+            // harmonic_V_B
             BigDecimal[] harmonic_V_B = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_V_B[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
-
+            cusIotVoltageHarmonic.setHarmonicB(Arrays.toString(harmonic_V_B));
             // C相谐波电压
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_V_C
+            // harmonic_V_C
             BigDecimal[] harmonic_V_C = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_V_C[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
+            cusIotVoltageHarmonic.setHarmonicC(Arrays.toString(harmonic_V_C));
 
             // A相谐波电流
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_C_A
+            // harmonic_C_A
             BigDecimal[] harmonic_C_A = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_C_A[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
+            cusIotCurrentHarmonic.setHarmonicA(Arrays.toString(harmonic_C_A));
             // B相谐波电流
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_C_B
+            // harmonic_C_B
             BigDecimal[] harmonic_C_B = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_C_B[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
-
+            cusIotCurrentHarmonic.setHarmonicB(Arrays.toString(harmonic_C_B));
             // C相谐波电流
             // 长度： 2字节， 62个点，分辨率： 0.01 单位：% 共 2*62=124个字节 , 2字节转short
             count = 2;
-            // TODO harmonic_C_C
+            // harmonic_C_C
             BigDecimal[] harmonic_C_C = new BigDecimal[62];
             for (int i = 0; i < 62; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 harmonic_C_C[i] = new BigDecimal(bytesToShort(segment_i)).multiply(multiply001);
                 begin = begin + count;
             }
+            cusIotCurrentHarmonic.setHarmonicC(Arrays.toString(harmonic_C_C));
+
 
             // end
             // 第二段报文结束， 结束位 2字节， 校验 0D 0A
             count = 2;
             byte[] segment_11 = subBytes(bytes, begin, count);
             String str11 = bytesToHexString(segment_11);
+
             // 解析成16进制， 判断是否合规。
             if (!(StringUtils.equals(str11, "0D0A") || StringUtils.equals(str11, "0d0a"))) {
-                logger.debug("第【1】段数据解析错误， 期望的数据头为 0D0A 或 0d0a， 得到的文件头为: " + str11);
+                logger.debug("第【2】段数据解析错误， 期望的数据结束位为 0D0A 或 0d0a， 得到的文件头为: " + str11);
                 return;
             }
             logger.debug("第【2】段数据结束位校验通过，解析完成 <--");
-
+            // TODO update database
+            cusIoTCurrentService.insertCusIoTCurrent(cusIoTCurrent);
+            cusIotVoltageService.insertCusIotVoltage(cusIotVoltage);
+            cusIotPowerDataService.insertCusIotPowerData(cusIotPowerDataA);
+            cusIotPowerDataService.insertCusIotPowerData(cusIotPowerDataR);
+            cusIotPowerDataService.insertCusIotPowerData(cusIotPowerDataF);
+            cusIotCurrentHarmonicService.insertCusIotCurrentHarmonic(cusIotCurrentHarmonic);
+            cusIotVoltageHarmonicService.insertCusIotVoltageHarmonic(cusIotVoltageHarmonic);
             // 向客户端回写数据
         } catch (Exception e) {
             e.printStackTrace();

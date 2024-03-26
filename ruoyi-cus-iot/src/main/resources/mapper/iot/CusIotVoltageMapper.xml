@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.CusIotVoltageMapper">
+
+    <resultMap type="CusIotVoltage" id="CusIotVoltageResult">
+        <result property="id"    column="id"    />
+        <result property="timestamp"    column="timestamp"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="voltageA1"    column="voltage_a_1"    />
+        <result property="voltageA2"    column="voltage_a_2"    />
+        <result property="voltageB1"    column="voltage_b_1"    />
+        <result property="voltageB2"    column="voltage_b_2"    />
+        <result property="voltageC1"    column="voltage_c_1"    />
+        <result property="voltageC2"    column="voltage_c_2"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectCusIotVoltageVo">
+        select id, timestamp, device_id, voltage_a_1, voltage_a_2, voltage_b_1, voltage_b_2, voltage_c_1, voltage_c_2, create_by, create_time, update_by, update_time from cus_iot_voltage
+    </sql>
+
+    <select id="selectCusIotVoltageList" parameterType="CusIotVoltage" resultMap="CusIotVoltageResult">
+        <include refid="selectCusIotVoltageVo"/>
+        <where>
+            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+    </select>
+
+    <select id="selectCusIotVoltageById" parameterType="Long" resultMap="CusIotVoltageResult">
+        <include refid="selectCusIotVoltageVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertCusIotVoltage" parameterType="CusIotVoltage" useGeneratedKeys="true" keyProperty="id">
+        insert into cus_iot_voltage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="timestamp != null">timestamp,</if>
+            <if test="deviceId != null and deviceId != ''">device_id,</if>
+            <if test="voltageA1 != null">voltage_a_1,</if>
+            <if test="voltageA2 != null">voltage_a_2,</if>
+            <if test="voltageB1 != null">voltage_b_1,</if>
+            <if test="voltageB2 != null">voltage_b_2,</if>
+            <if test="voltageC1 != null">voltage_c_1,</if>
+            <if test="voltageC2 != null">voltage_c_2,</if>
+            create_by,
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="deviceId != null and deviceId != ''">#{deviceId},</if>
+            <if test="voltageA1 != null">#{voltageA1},</if>
+            <if test="voltageA2 != null">#{voltageA2},</if>
+            <if test="voltageB1 != null">#{voltageB1},</if>
+            <if test="voltageB2 != null">#{voltageB2},</if>
+            <if test="voltageC1 != null">#{voltageC1},</if>
+            <if test="voltageC2 != null">#{voltageC2},</if>
+            #{createBy},
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateCusIotVoltage" parameterType="CusIotVoltage">
+        update cus_iot_voltage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="deviceId != null and deviceId != ''">device_id = #{deviceId},</if>
+            <if test="voltageA1 != null">voltage_a_1 = #{voltageA1},</if>
+            <if test="voltageA2 != null">voltage_a_2 = #{voltageA2},</if>
+            <if test="voltageB1 != null">voltage_b_1 = #{voltageB1},</if>
+            <if test="voltageB2 != null">voltage_b_2 = #{voltageB2},</if>
+            <if test="voltageC1 != null">voltage_c_1 = #{voltageC1},</if>
+            <if test="voltageC2 != null">voltage_c_2 = #{voltageC2},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCusIotVoltageById" parameterType="Long">
+        delete from cus_iot_voltage where id = #{id}
+    </delete>
+
+    <delete id="deleteCusIotVoltageByIds" parameterType="String">
+        delete from cus_iot_voltage where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
