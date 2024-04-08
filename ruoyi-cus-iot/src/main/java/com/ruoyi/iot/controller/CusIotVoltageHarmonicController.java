@@ -47,6 +47,15 @@ public class CusIotVoltageHarmonicController extends BaseController
     }
 
     /**
+     * 查询最新一条谐波电压数据详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:harmonicVoltage:query')")
+    @GetMapping("/latest/{deviceId}")
+    public AjaxResult getLatestOne(@PathVariable("deviceId") String deviceId) {
+        return success(cusIotVoltageHarmonicService.selectCusIoTVoltageHarmonicLatestOne(deviceId));
+    }
+
+    /**
      * 导出谐波电压数据列表
      */
     @PreAuthorize("@ss.hasPermi('IoT:harmonicVoltage:export')")

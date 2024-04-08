@@ -1,6 +1,7 @@
 package com.ruoyi.iot.service.impl;
 
 import java.util.List;
+
 import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +16,7 @@ import com.ruoyi.iot.service.ICusIoTCurrentService;
  * @date 2024-03-25
  */
 @Service
-public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
-{
+public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService {
     @Autowired
     private CusIoTCurrentMapper cusIoTCurrentMapper;
 
@@ -27,9 +27,28 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 电流数据
      */
     @Override
-    public CusIoTCurrent selectCusIoTCurrentById(Long id)
-    {
+    public CusIoTCurrent selectCusIoTCurrentById(Long id) {
         return cusIoTCurrentMapper.selectCusIoTCurrentById(id);
+    }
+
+    /**
+     * 查询最新一条电流数据
+     *
+     * @param deviceId 设备编码
+     * @return 电流数据
+     */
+    @Override
+    public CusIoTCurrent selectCusIoTCurrentLatestOne(String deviceId) {
+        return cusIoTCurrentMapper.selectCusIoTCurrentLatestOne(deviceId);
+    }
+
+    /**
+     * 精确获取电流数据详细信息
+     * @param cusIoTCurrent 电流数据
+     * @return 电流数据集合
+     */
+    public List<CusIoTCurrent> selectCusIoTCurrentByField(CusIoTCurrent cusIoTCurrent){
+        return cusIoTCurrentMapper.selectCusIoTCurrentByField(cusIoTCurrent);
     }
 
     /**
@@ -39,8 +58,7 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 电流数据
      */
     @Override
-    public List<CusIoTCurrent> selectCusIoTCurrentList(CusIoTCurrent cusIoTCurrent)
-    {
+    public List<CusIoTCurrent> selectCusIoTCurrentList(CusIoTCurrent cusIoTCurrent) {
         return cusIoTCurrentMapper.selectCusIoTCurrentList(cusIoTCurrent);
     }
 
@@ -51,8 +69,7 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 结果
      */
     @Override
-    public int insertCusIoTCurrent(CusIoTCurrent cusIoTCurrent)
-    {
+    public int insertCusIoTCurrent(CusIoTCurrent cusIoTCurrent) {
         return cusIoTCurrentMapper.insertCusIoTCurrent(cusIoTCurrent);
     }
 
@@ -63,8 +80,7 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 结果
      */
     @Override
-    public int updateCusIoTCurrent(CusIoTCurrent cusIoTCurrent)
-    {
+    public int updateCusIoTCurrent(CusIoTCurrent cusIoTCurrent) {
         return cusIoTCurrentMapper.updateCusIoTCurrent(cusIoTCurrent);
     }
 
@@ -75,8 +91,7 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 结果
      */
     @Override
-    public int deleteCusIoTCurrentByIds(Long[] ids)
-    {
+    public int deleteCusIoTCurrentByIds(Long[] ids) {
         return cusIoTCurrentMapper.deleteCusIoTCurrentByIds(ids);
     }
 
@@ -87,8 +102,7 @@ public class CusIoTCurrentServiceImpl implements ICusIoTCurrentService
      * @return 结果
      */
     @Override
-    public int deleteCusIoTCurrentById(Long id)
-    {
+    public int deleteCusIoTCurrentById(Long id) {
         return cusIoTCurrentMapper.deleteCusIoTCurrentById(id);
     }
 }

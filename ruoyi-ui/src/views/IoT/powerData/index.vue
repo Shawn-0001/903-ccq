@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="UUID" prop="UUID">
+        <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
+      </el-form-item>
       <el-form-item label="时间戳" prop="timestamp">
         <el-input v-model="queryParams.timestamp" placeholder="请输入时间戳" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
@@ -11,8 +14,8 @@
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
-          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -21,7 +24,7 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
           v-hasPermi="['IoT:powerData:add']">新增</el-button>
       </el-col>
@@ -32,7 +35,7 @@
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['IoT:powerData:remove']">删除</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
           v-hasPermi="['IoT:powerData:export']">导出</el-button>
@@ -43,9 +46,22 @@
     <el-table v-loading="loading" :data="powerDataList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="自增序列" align="center" prop="id" />
+      <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />
       <el-table-column label="上传的时间戳" align="center" prop="timestamp" />
       <el-table-column label="设备ID" align="center" prop="deviceId" />
-      <el-table-column label="A:active_power:有功功率 R:reactive_power:无功功率 F:power_factor:功率因素" align="center" prop="type" />
+      <el-table-column label="A:active_power:有功功率 R: F:" align="center" prop="type">
+        <template slot-scope="{}" slot="header">
+          <span>功率数据</span>
+          <el-tooltip class="item" effect="dark" placement="top">
+            <i class="el-icon-question" style="font-size: 14px; vertical-align: middle;"></i>
+            <div slot="content">
+              <p>P ：有功功率</p>
+              <p>Q ：无功功率</p>
+              <p>C ：consinΦ,功率因素</p>
+            </div>
+          </el-tooltip>
+        </template>
+      </el-table-column>
       <el-table-column label="A相" align="center" prop="phaseA" />
       <el-table-column label="B相" align="center" prop="phaseB" />
       <el-table-column label="C相" align="center" prop="phaseC" />
@@ -53,7 +69,7 @@
       <el-table-column label="创建者" align="center" prop="createBy" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}  {h}:{m}:{s}') }}</span>
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -70,7 +86,7 @@
       @pagination="getList" />
 
     <!-- 添加或修改功率数据对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <!-- <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="上传的时间戳" prop="timestamp">
           <el-input v-model="form.timestamp" placeholder="请输入上传的时间戳" />
@@ -95,7 +111,7 @@
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -130,6 +146,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        UUID: null,
         timestamp: null,
         deviceId: null,
         type: null,
@@ -137,16 +154,16 @@ export default {
         createTime: null,
       },
       // 表单参数
-      form: {},
+      // form: {},
       // 表单校验
-      rules: {
-        deviceId: [
-          { required: true, message: "设备ID不能为空", trigger: "blur" }
-        ],
-        type: [
-          { required: true, message: "A:active_power:有功功率 R:reactive_power:无功功率F:power_factor:功率因素不能为空", trigger: "change" }
-        ],
-      }
+      // rules: {
+      //   deviceId: [
+      //     { required: true, message: "设备ID不能为空", trigger: "blur" }
+      //   ],
+      //   type: [
+      //     { required: true, message: "A:active_power:有功功率 R:reactive_power:无功功率F:power_factor:功率因素不能为空", trigger: "change" }
+      //   ],
+      // }
     };
   },
   created() {
@@ -168,28 +185,28 @@ export default {
       });
     },
     // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
-    },
+    // cancel() {
+    //   this.open = false;
+    //   this.reset();
+    // },
     // 表单重置
-    reset() {
-      this.form = {
-        id: null,
-        timestamp: null,
-        deviceId: null,
-        type: null,
-        phaseA: null,
-        phaseB: null,
-        phaseC: null,
-        total: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null
-      };
-      this.resetForm("form");
-    },
+    // reset() {
+    //   this.form = {
+    //     id: null,
+    //     timestamp: null,
+    //     deviceId: null,
+    //     type: null,
+    //     phaseA: null,
+    //     phaseB: null,
+    //     phaseC: null,
+    //     total: null,
+    //     createBy: null,
+    //     createTime: null,
+    //     updateBy: null,
+    //     updateTime: null
+    //   };
+    //   this.resetForm("form");
+    // },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -208,51 +225,51 @@ export default {
       this.multiple = !selection.length
     },
     /** 新增按钮操作 */
-    handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加功率数据";
-    },
+    // handleAdd() {
+    //   this.reset();
+    //   this.open = true;
+    //   this.title = "添加功率数据";
+    // },
     /** 修改按钮操作 */
-    handleUpdate(row) {
-      this.reset();
-      const id = row.id || this.ids
-      getPowerData(id).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改功率数据";
-      });
-    },
+    // handleUpdate(row) {
+    //   this.reset();
+    //   const id = row.id || this.ids
+    //   getPowerData(id).then(response => {
+    //     this.form = response.data;
+    //     this.open = true;
+    //     this.title = "修改功率数据";
+    //   });
+    // },
     /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.id != null) {
-            updatePowerData(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addPowerData(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
-    },
+    // submitForm() {
+    //   this.$refs["form"].validate(valid => {
+    //     if (valid) {
+    //       if (this.form.id != null) {
+    //         updatePowerData(this.form).then(response => {
+    //           this.$modal.msgSuccess("修改成功");
+    //           this.open = false;
+    //           this.getList();
+    //         });
+    //       } else {
+    //         addPowerData(this.form).then(response => {
+    //           this.$modal.msgSuccess("新增成功");
+    //           this.open = false;
+    //           this.getList();
+    //         });
+    //       }
+    //     }
+    //   });
+    // },
     /** 删除按钮操作 */
-    handleDelete(row) {
-      const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除功率数据编号为"' + ids + '"的数据项？').then(function () {
-        return delPowerData(ids);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-      }).catch(() => { });
-    },
+    // handleDelete(row) {
+    //   const ids = row.id || this.ids;
+    //   this.$modal.confirm('是否确认删除功率数据编号为"' + ids + '"的数据项？').then(function () {
+    //     return delPowerData(ids);
+    //   }).then(() => {
+    //     this.getList();
+    //     this.$modal.msgSuccess("删除成功");
+    //   }).catch(() => { });
+    // },
     /** 导出按钮操作 */
     handleExport() {
       this.download('IoT/powerData/export', {

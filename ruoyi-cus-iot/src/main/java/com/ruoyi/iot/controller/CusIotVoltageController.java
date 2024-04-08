@@ -2,6 +2,8 @@ package com.ruoyi.iot.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.iot.domain.CusIoTCurrent;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +49,16 @@ public class CusIotVoltageController extends BaseController
     }
 
     /**
+     *  精确获取电压数据详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:voltage:list')")
+    @GetMapping(value = "/field")
+    public TableDataInfo getVoltageByField(CusIotVoltage cusIotVoltage) {
+        List<CusIotVoltage> list = cusIotVoltageService.selectCusIoTVoltageByField(cusIotVoltage);
+        return getDataTable(list);
+    }
+
+    /**
      * 导出电压数据列表
      */
     @PreAuthorize("@ss.hasPermi('IoT:voltage:export')")
@@ -68,6 +80,17 @@ public class CusIotVoltageController extends BaseController
     {
         return success(cusIotVoltageService.selectCusIotVoltageById(id));
     }
+
+    /**
+     * 查询最新一条电压数据
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:voltage:query')")
+    @GetMapping("/latest/{deviceId}")
+    public AjaxResult getLatestOne(@PathVariable("deviceId") String deviceId)
+    {
+        return success(cusIotVoltageService.selectCusIoTVoltageLatestOne(deviceId));
+    }
+
 
     /**
      * 新增电压数据

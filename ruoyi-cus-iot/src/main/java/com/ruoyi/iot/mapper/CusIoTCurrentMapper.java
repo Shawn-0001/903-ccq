@@ -1,7 +1,11 @@
 package com.ruoyi.iot.mapper;
 
 import java.util.List;
+
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.iot.domain.CusIoTCurrent;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * 电流数据Mapper接口
@@ -18,6 +22,20 @@ public interface CusIoTCurrentMapper
      * @return 电流数据
      */
     public CusIoTCurrent selectCusIoTCurrentById(Long id);
+
+    /**
+     * 查询最新一条电流数据
+     * @param deviceId 设备编码
+     * @return 电流数据
+     */
+    public CusIoTCurrent selectCusIoTCurrentLatestOne(String deviceId);
+
+    /**
+     * 精确获取电流数据详细信息
+     * @param cusIoTCurrent 电流数据
+     * @return 电流数据集合
+     */
+    public List<CusIoTCurrent> selectCusIoTCurrentByField(CusIoTCurrent cusIoTCurrent);
 
     /**
      * 查询电流数据列表

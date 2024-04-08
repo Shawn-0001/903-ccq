@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="UUID" prop="UUID">
+        <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
+      </el-form-item>
       <el-form-item label="时间戳" prop="timestamp">
         <el-input v-model="queryParams.timestamp" placeholder="请输入时间戳" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
@@ -11,8 +14,8 @@
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
-          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -21,7 +24,7 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
           v-hasPermi="['IoT:harmonicCurrent:add']">新增</el-button>
       </el-col>
@@ -32,7 +35,7 @@
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['IoT:harmonicCurrent:remove']">删除</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
           v-hasPermi="['IoT:harmonicCurrent:export']">导出</el-button>
@@ -43,15 +46,16 @@
     <el-table v-loading="loading" :data="harmonicCurrentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="自增序列" align="center" prop="id" />
-      <el-table-column label="上传的时间戳" align="center" prop="timestamp" min-width="100px"/>
-      <el-table-column label="设备ID" align="center" prop="deviceId" min-width="150px"/>
-      <el-table-column label="A相谐波电流" align="center" prop="harmonicA" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="B相谐波电流" align="center" prop="harmonicB" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="C相谐波电流" align="center" prop="harmonicC" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="创建者" align="center" prop="createBy" min-width="120px"/>
+      <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />
+      <el-table-column label="上传的时间戳" align="center" prop="timestamp" min-width="120px" />
+      <el-table-column label="设备ID" align="center" prop="deviceId" min-width="150px" />
+      <el-table-column label="A相谐波电流" align="center" prop="harmonicA" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="B相谐波电流" align="center" prop="harmonicB" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="C相谐波电流" align="center" prop="harmonicC" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="创建者" align="center" prop="createBy" min-width="120px" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}  {h}:{m}:{s}') }}</span>
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -68,7 +72,7 @@
       @pagination="getList" />
 
     <!-- 添加或修改谐波电流数据对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <!-- <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="上传的时间戳" prop="timestamp">
           <el-input v-model="form.timestamp" placeholder="请输入上传的时间戳" />
@@ -90,7 +94,7 @@
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -125,6 +129,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        UUID: null,
         timestamp: null,
         deviceId: null,
         createBy: null,

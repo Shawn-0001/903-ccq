@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.CusIotDeviceListMapper">
+
+    <resultMap type="CusIotDeviceList" id="CusIotDeviceListResult">
+        <result property="id" column="id"/>
+        <result property="latestUUID" column="latest_uuid"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectCusIotDeviceListVo">
+        select id, latest_uuid, timestamp, device_id, remark, create_by, create_time, update_by, update_time from cus_iot_device_list
+    </sql>
+
+    <select id="selectCusIotDeviceListList" parameterType="CusIotDeviceList" resultMap="CusIotDeviceListResult">
+        <include refid="selectCusIotDeviceListVo"/>
+        <where>
+            <if test="deviceId != null  and deviceId != ''">and device_id like concat('%', #{deviceId}, '%')</if>
+            <if test="remark != null  and remark != ''">and remark like concat('%', #{remark}, '%')</if>
+            <if test="createBy != null  and createBy != ''">and create_by like concat('%', #{createBy}, '%')</if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectCusIoTDeviceByField" parameterType="CusIotDeviceList" resultMap="CusIotDeviceListResult">
+        <include refid="selectCusIotDeviceListVo"/>
+        <where>
+            <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
+            <if test="timestamp != null  and timestamp != ''">and timestamp = #{timestamp}</if>
+            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
+        </where>
+    </select>
+
+    <select id="selectCusIotDeviceListById" parameterType="Long" resultMap="CusIotDeviceListResult">
+        <include refid="selectCusIotDeviceListVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertCusIotDeviceList" parameterType="CusIotDeviceList" useGeneratedKeys="true" keyProperty="id">
+        insert into cus_iot_device_list
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="latestUUID != null">latest_uuid,</if>
+            <if test="timestamp != null">timestamp,</if>
+            <if test="deviceId != null and deviceId != ''">device_id,</if>
+            <if test="remark != null">remark,</if>
+            create_by,
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="latestUUID != null">#{latestUUID},</if>
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="deviceId != null and deviceId != ''">#{deviceId},</if>
+            <if test="remark != null">#{remark},</if>
+            #{createBy},
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateCusIotDeviceList" parameterType="CusIotDeviceList">
+        update cus_iot_device_list
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="latestUUID != null">latest_uuid = #{latestUUID},</if>
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="deviceId != null and deviceId != ''">device_id = #{deviceId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCusIotDeviceListById" parameterType="Long">
+        delete from cus_iot_device_list where id = #{id}
+    </delete>
+
+    <delete id="deleteCusIotDeviceListByIds" parameterType="String">
+        delete from cus_iot_device_list where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

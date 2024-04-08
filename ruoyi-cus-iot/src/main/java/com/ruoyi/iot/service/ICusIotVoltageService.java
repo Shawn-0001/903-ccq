@@ -1,6 +1,8 @@
 package com.ruoyi.iot.service;
 
 import java.util.List;
+
+import com.ruoyi.iot.domain.CusIoTCurrent;
 import com.ruoyi.iot.domain.CusIotVoltage;
 
 /**
@@ -20,12 +22,27 @@ public interface ICusIotVoltageService
     public CusIotVoltage selectCusIotVoltageById(Long id);
 
     /**
+     * 查询最新一条电压数据
+     *
+     * @param deviceId 设备编码
+     * @return 电压数据
+     */
+    public CusIotVoltage selectCusIoTVoltageLatestOne(String deviceId);
+
+    /**
      * 查询电压数据列表
      *
      * @param cusIotVoltage 电压数据
      * @return 电压数据集合
      */
     public List<CusIotVoltage> selectCusIotVoltageList(CusIotVoltage cusIotVoltage);
+
+    /**
+     * 精确获取电流数据详细信息
+     * @param cusIotVoltage 电压数据
+     * @return 电流数据集合
+     */
+    public List<CusIotVoltage> selectCusIoTVoltageByField(CusIotVoltage cusIotVoltage);
 
     /**
      * 新增电压数据

@@ -1,44 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.iot.mapper.CusIotVoltageHarmonicMapper">
-    
+
     <resultMap type="CusIotVoltageHarmonic" id="CusIotVoltageHarmonicResult">
-        <result property="id"    column="id"    />
-        <result property="timestamp"    column="timestamp"    />
-        <result property="deviceId"    column="device_id"    />
-        <result property="harmonicA"    column="harmonic_a"    />
-        <result property="harmonicB"    column="harmonic_b"    />
-        <result property="harmonicC"    column="harmonic_c"    />
-        <result property="createBy"    column="create_by"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateBy"    column="update_by"    />
-        <result property="updateTime"    column="update_time"    />
+        <result property="id" column="id"/>
+        <result property="UUID" column="uuid"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="harmonicA" column="harmonic_a"/>
+        <result property="harmonicB" column="harmonic_b"/>
+        <result property="harmonicC" column="harmonic_c"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <sql id="selectCusIotVoltageHarmonicVo">
-        select id, timestamp, device_id, harmonic_a, harmonic_b, harmonic_c, create_by, create_time, update_by, update_time from cus_iot_voltage_harmonic
+        select id, uuid, timestamp, device_id, harmonic_a, harmonic_b, harmonic_c, create_by, create_time, update_by, update_time from
+        cus_iot_voltage_harmonic
     </sql>
 
     <select id="selectCusIotVoltageHarmonicList" parameterType="CusIotVoltageHarmonic" resultMap="CusIotVoltageHarmonicResult">
         <include refid="selectCusIotVoltageHarmonicVo"/>
-        <where>  
-            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
-            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
-            <if test="createBy != null  and createBy != ''"> and create_by = #{createBy}</if>
-            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        <where>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
+            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
         </where>
+        order by id desc
     </select>
-    
+
     <select id="selectCusIotVoltageHarmonicById" parameterType="Long" resultMap="CusIotVoltageHarmonicResult">
         <include refid="selectCusIotVoltageHarmonicVo"/>
         where id = #{id}
     </select>
-        
+
+    <select id="selectCusIoTVoltageHarmonicLatestOne" parameterType="String" resultMap="CusIotVoltageHarmonicResult">
+        <include refid="selectCusIotVoltageHarmonicVo"/>
+        <where>
+            <if test="deviceId != null ">and device_id = #{deviceId}</if>
+        </where>
+        ORDER BY id DESC LIMIT 0,1
+    </select>
+
     <insert id="insertCusIotVoltageHarmonic" parameterType="CusIotVoltageHarmonic" useGeneratedKeys="true" keyProperty="id">
         insert into cus_iot_voltage_harmonic
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">uuid,</if>
             <if test="timestamp != null">timestamp,</if>
             <if test="deviceId != null and deviceId != ''">device_id,</if>
             <if test="harmonicA != null">harmonic_a,</if>
@@ -46,8 +60,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="harmonicC != null">harmonic_c,</if>
             create_by,
             create_time
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">#{UUID},</if>
             <if test="timestamp != null">#{timestamp},</if>
             <if test="deviceId != null and deviceId != ''">#{deviceId},</if>
             <if test="harmonicA != null">#{harmonicA},</if>
@@ -55,12 +70,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="harmonicC != null">#{harmonicC},</if>
             #{createBy},
             sysdate()
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateCusIotVoltageHarmonic" parameterType="CusIotVoltageHarmonic">
         update cus_iot_voltage_harmonic
         <trim prefix="SET" suffixOverrides=",">
+            <if test="UUID != null">uuid = #{UUID},</if>
             <if test="timestamp != null">timestamp = #{timestamp},</if>
             <if test="deviceId != null and deviceId != ''">device_id = #{deviceId},</if>
             <if test="harmonicA != null">harmonic_a = #{harmonicA},</if>
@@ -77,7 +93,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteCusIotVoltageHarmonicByIds" parameterType="String">
-        delete from cus_iot_voltage_harmonic where id in 
+        delete from cus_iot_voltage_harmonic where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

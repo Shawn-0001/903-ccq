@@ -26,7 +26,7 @@ export default {
       type: Boolean,
       default: true
     },
-    chartData: {
+    chartData: { 
       type: Object,
       required: true
     }

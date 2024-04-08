@@ -28,6 +28,14 @@ public interface ICusIotVoltageHarmonicService
     public List<CusIotVoltageHarmonic> selectCusIotVoltageHarmonicList(CusIotVoltageHarmonic cusIotVoltageHarmonic);
 
     /**
+     * 查询最新一条谐波电压数据详细信息
+     *
+     * @param deviceId 谐波电压数据主键
+     * @return 谐波电压数据
+     */
+    public CusIotVoltageHarmonic selectCusIoTVoltageHarmonicLatestOne(String deviceId);
+
+    /**
      * 新增谐波电压数据
      * 
      * @param cusIotVoltageHarmonic 谐波电压数据

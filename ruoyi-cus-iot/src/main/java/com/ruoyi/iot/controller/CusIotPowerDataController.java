@@ -47,6 +47,17 @@ public class CusIotPowerDataController extends BaseController
     }
 
     /**
+     * 精确查询功率数据列表
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:powerData:list')")
+    @GetMapping("/field")
+    public TableDataInfo getPowerDataByField(CusIotPowerData cusIotPowerData)
+    {
+        List<CusIotPowerData> list = cusIotPowerDataService.selectCusIotPowerDataByField(cusIotPowerData);
+        return getDataTable(list);
+    }
+
+    /**
      * 导出功率数据列表
      */
     @PreAuthorize("@ss.hasPermi('IoT:powerData:export')")

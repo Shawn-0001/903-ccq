@@ -20,6 +20,21 @@ public interface ICusIoTCurrentService
     public CusIoTCurrent selectCusIoTCurrentById(Long id);
 
     /**
+     * 查询最新一条电流数据
+     *
+     * @param deviceId 设备编码
+     * @return 电流数据
+     */
+    public CusIoTCurrent selectCusIoTCurrentLatestOne(String deviceId);
+
+    /**
+     * 精确获取电流数据详细信息
+     * @param cusIoTCurrent 电流数据
+     * @return 电流数据集合
+     */
+    public List<CusIoTCurrent> selectCusIoTCurrentByField(CusIoTCurrent cusIoTCurrent);
+
+    /**
      * 查询电流数据列表
      *
      * @param cusIoTCurrent 电流数据

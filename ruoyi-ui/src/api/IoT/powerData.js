@@ -9,6 +9,15 @@ export function listPowerData(query) {
   })
 }
 
+// 精确查询功率数据列表
+export function getPowerDataByField(query) {
+  return request({
+    url: '/IoT/powerData/field',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询功率数据详细
 export function getPowerData(id) {
   return request({

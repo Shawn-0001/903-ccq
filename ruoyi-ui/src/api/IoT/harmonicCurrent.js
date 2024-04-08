@@ -17,6 +17,14 @@ export function getHarmonicCurrent(id) {
   })
 }
 
+// 查询最新一条电流数据
+export function getLatestHarmonicCurrent(deviceId) {
+  return request({
+    url: '/IoT/harmonicCurrent/latest/' + deviceId,
+    method: 'get'
+  })
+}
+
 // 新增谐波电流数据
 export function addHarmonicCurrent(data) {
   return request({

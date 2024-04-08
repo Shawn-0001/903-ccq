@@ -1,47 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.iot.mapper.CusIotPowerDataMapper">
-    
+
     <resultMap type="CusIotPowerData" id="CusIotPowerDataResult">
-        <result property="id"    column="id"    />
-        <result property="timestamp"    column="timestamp"    />
-        <result property="deviceId"    column="device_id"    />
-        <result property="type"    column="type"    />
-        <result property="phaseA"    column="phase_a"    />
-        <result property="phaseB"    column="phase_b"    />
-        <result property="phaseC"    column="phase_c"    />
-        <result property="total"    column="total"    />
-        <result property="createBy"    column="create_by"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateBy"    column="update_by"    />
-        <result property="updateTime"    column="update_time"    />
+        <result property="id" column="id"/>
+        <result property="UUID" column="uuid"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="type" column="type"/>
+        <result property="phaseA" column="phase_a"/>
+        <result property="phaseB" column="phase_b"/>
+        <result property="phaseC" column="phase_c"/>
+        <result property="total" column="total"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <sql id="selectCusIotPowerDataVo">
-        select id, timestamp, device_id, type, phase_a, phase_b, phase_c, total, create_by, create_time, update_by, update_time from cus_iot_power_data
+        select id, uuid, timestamp, device_id, type, phase_a, phase_b, phase_c, total, create_by, create_time, update_by, update_time from
+        cus_iot_power_data
     </sql>
 
     <select id="selectCusIotPowerDataList" parameterType="CusIotPowerData" resultMap="CusIotPowerDataResult">
         <include refid="selectCusIotPowerDataVo"/>
-        <where>  
-            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
-            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
-            <if test="type != null  and type != ''"> and type = #{type}</if>
-            <if test="createBy != null  and createBy != ''"> and create_by = #{createBy}</if>
-            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        <where>
+            <if test="UUID != null ">and uuid = #{UUID}</if>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
+            <if test="type != null  and type != ''">and type = #{type}</if>
+            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectCusIotPowerDataByField" parameterType="CusIotPowerData" resultMap="CusIotPowerDataResult">
+        <include refid="selectCusIotPowerDataVo"/>
+        <where>
+            <if test="UUID != null ">and uuid = #{UUID}</if>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
+            <if test="type != null  and type != ''">and type = #{type}</if>
+            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
         </where>
     </select>
-    
+
     <select id="selectCusIotPowerDataById" parameterType="Long" resultMap="CusIotPowerDataResult">
         <include refid="selectCusIotPowerDataVo"/>
         where id = #{id}
     </select>
-        
+
     <insert id="insertCusIotPowerData" parameterType="CusIotPowerData" useGeneratedKeys="true" keyProperty="id">
         insert into cus_iot_power_data
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">uuid,</if>
             <if test="timestamp != null">timestamp,</if>
             <if test="deviceId != null and deviceId != ''">device_id,</if>
             <if test="type != null and type != ''">type,</if>
@@ -51,8 +72,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="total != null">total,</if>
             create_by,
             create_time
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">#{UUID},</if>
             <if test="timestamp != null">#{timestamp},</if>
             <if test="deviceId != null and deviceId != ''">#{deviceId},</if>
             <if test="type != null and type != ''">#{type},</if>
@@ -62,12 +84,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="total != null">#{total},</if>
             #{createBy},
             sysdate()
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateCusIotPowerData" parameterType="CusIotPowerData">
         update cus_iot_power_data
         <trim prefix="SET" suffixOverrides=",">
+            <if test="UUID != null">uuid = #{UUID},</if>
             <if test="timestamp != null">timestamp = #{timestamp},</if>
             <if test="deviceId != null and deviceId != ''">device_id = #{deviceId},</if>
             <if test="type != null and type != ''">type = #{type},</if>
@@ -86,7 +109,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteCusIotPowerDataByIds" parameterType="String">
-        delete from cus_iot_power_data where id in 
+        delete from cus_iot_power_data where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

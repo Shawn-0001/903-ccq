@@ -31,8 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  */
 @RestController
 @RequestMapping("/IoT/current")
-public class CusIoTCurrentController extends BaseController
-{
+public class CusIoTCurrentController extends BaseController {
     @Autowired
     private ICusIoTCurrentService cusIoTCurrentService;
 
@@ -41,8 +40,7 @@ public class CusIoTCurrentController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('IoT:current:list')")
     @GetMapping("/list")
-    public TableDataInfo list(CusIoTCurrent cusIoTCurrent)
-    {
+    public TableDataInfo list(CusIoTCurrent cusIoTCurrent) {
         startPage();
         List<CusIoTCurrent> list = cusIoTCurrentService.selectCusIoTCurrentList(cusIoTCurrent);
         return getDataTable(list);
@@ -54,8 +52,7 @@ public class CusIoTCurrentController extends BaseController
     @PreAuthorize("@ss.hasPermi('IoT:current:export')")
     @Log(title = "电流数据", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, CusIoTCurrent cusIoTCurrent)
-    {
+    public void export(HttpServletResponse response, CusIoTCurrent cusIoTCurrent) {
         List<CusIoTCurrent> list = cusIoTCurrentService.selectCusIoTCurrentList(cusIoTCurrent);
         ExcelUtil<CusIoTCurrent> util = new ExcelUtil<CusIoTCurrent>(CusIoTCurrent.class);
         util.exportExcel(response, list, "电流数据数据");
@@ -66,9 +63,27 @@ public class CusIoTCurrentController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('IoT:current:query')")
     @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
-    {
+    public AjaxResult getInfo(@PathVariable("id") Long id) {
         return success(cusIoTCurrentService.selectCusIoTCurrentById(id));
+    }
+
+    /**
+     *  精确获取电流数据详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:current:query')")
+    @GetMapping(value = "/field")
+    public TableDataInfo getCurrentByField(CusIoTCurrent cusIoTCurrent) {
+        List<CusIoTCurrent> list = cusIoTCurrentService.selectCusIoTCurrentByField(cusIoTCurrent);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询最新一条电流数据
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:current:query')")
+    @GetMapping("/latest/{deviceId}")
+    public AjaxResult getLatestOne(@PathVariable("deviceId") String deviceId) {
+        return success(cusIoTCurrentService.selectCusIoTCurrentLatestOne(deviceId));
     }
 
     /**
@@ -77,8 +92,7 @@ public class CusIoTCurrentController extends BaseController
     @PreAuthorize("@ss.hasPermi('IoT:current:add')")
     @Log(title = "电流数据", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody CusIoTCurrent cusIoTCurrent)
-    {
+    public AjaxResult add(@RequestBody CusIoTCurrent cusIoTCurrent) {
         cusIoTCurrent.setCreateBy(getUsername());
         return toAjax(cusIoTCurrentService.insertCusIoTCurrent(cusIoTCurrent));
     }
@@ -89,8 +103,7 @@ public class CusIoTCurrentController extends BaseController
     @PreAuthorize("@ss.hasPermi('IoT:current:edit')")
     @Log(title = "电流数据", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody CusIoTCurrent cusIoTCurrent)
-    {
+    public AjaxResult edit(@RequestBody CusIoTCurrent cusIoTCurrent) {
         cusIoTCurrent.setUpdateBy(SecurityUtils.getUsername());
         return toAjax(cusIoTCurrentService.updateCusIoTCurrent(cusIoTCurrent));
     }
@@ -101,8 +114,7 @@ public class CusIoTCurrentController extends BaseController
     @PreAuthorize("@ss.hasPermi('IoT:current:remove')")
     @Log(title = "电流数据", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
-    {
+    public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(cusIoTCurrentService.deleteCusIoTCurrentByIds(ids));
     }
 }

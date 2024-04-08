@@ -17,6 +17,14 @@ export function getHarmonicVoltage(id) {
   })
 }
 
+// 查询最新一条电压数据
+export function getLatestHarmonicVoltage(deviceId) {
+  return request({
+    url: '/IoT/harmonicVoltage/latest/' + deviceId,
+    method: 'get'
+  })
+}
+
 // 新增谐波电压数据
 export function addHarmonicVoltage(data) {
   return request({

@@ -1,18 +1,60 @@
 package com.ruoyi.netty;
 
+import com.ruoyi.common.utils.uuid.IdUtils;
+import com.ruoyi.iot.domain.CusIotVoltage;
+import com.ruoyi.iot.service.*;
 import org.jtransforms.fft.FloatFFT_1D;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TestClass {
+    @Autowired
+    private ICusIoTCurrentService cusIoTCurrentService;
+    @Autowired
+    private ICusIotVoltageService cusIotVoltageService;
+    @Autowired
+    private ICusIotPowerDataService cusIotPowerDataService;
+    @Autowired
+    private ICusIotVoltageHarmonicService cusIotVoltageHarmonicService;
+    @Autowired
+    private ICusIotCurrentHarmonicService cusIotCurrentHarmonicService;
 
     @Test
-    public void test1(){
+    public  void testUUID(){
+        String fastUUID = IdUtils.fastUUID();
+        String fastSimpleUUID = IdUtils.fastSimpleUUID();
+        String randomUUID = IdUtils.randomUUID();
+        String simpleUUID = IdUtils.simpleUUID();
+
+        System.out.println(fastUUID);
+        System.out.println(fastSimpleUUID);
+        System.out.println(randomUUID);
+        System.out.println(simpleUUID);
+    }
+    @Test
+    public void testData() {
+        // get the latest 10000 lines
+        CusIotVoltage voltage = new CusIotVoltage();
+        Map<String, Object> params = new HashMap<>();
+        params.put("beginCreateTime", "2024-03-29 08:00:00");
+        params.put("endCreateTime", "2024-03-29 17:00:00");
+
+        List<CusIotVoltage> voltageList = cusIotVoltageService.selectCusIotVoltageList(voltage);
+
+
+    }
+
+    @Test
+    public void test1() {
         String str = "0.0230, 0.0095, 0.0020, 0.0115, 0.0260, 0.0435, 0.0460, 0.2490, 0.8085, 0.9455, 0.7155, 0.4730, 0.2500, 0.1715, 0.2830, 0.3255, 0.2405, 0.1600, 0.1845, 0.1945, 0.2095, 0.2215, 0.2300, 0.2415, 0.2525, 0.2600, 0.2685, 0.2790, 0.3275, 0.7850, 1.1330, 1.1620, 1.0575, 0.7880, 0.5155, 0.4885, 0.4420, 0.3235, 0.3145, 0.3195, 0.3285, 0.3340, 0.3305, 0.3280, 0.3255, 0.3220, 0.3145, 0.3055, 0.2935, 0.2820, 0.2705, 0.2610, 0.2490, 0.2390, 0.2245, 0.2100, 0.1925, 0.1750, 0.1570, 0.1270, 0.0820, 0.0365, 0.0005, -0.0150, -0.0140, 0.0010, 0.0075, -0.0065, -0.0205, -0.0360, -0.0410, -0.2545, -0.7685, -0.9470, -0.6690, -0.4260, -0.2550, -0.1435, -0.2835, -0.3730, -0.2095, -0.1535, -0.1735, -0.1905, -0.2130, -0.2165, -0.2265, -0.2380, -0.2450, -0.2565, -0.2680, -0.2770, -0.3190, -0.7025, -1.1470, -1.1895, -0.9575, -0.7595, -0.5355, -0.4045, -0.4035, -0.3160, -0.3165, -0.3220, -0.3270, -0.3355, -0.3340, -0.3300, -0.3275, -0.3220, -0.3170, -0.3085, -0.2995, -0.2895, -0.2785, -0.2685, -0.2560, -0.2450, -0.2295, -0.2155, -0.1990, -0.1815, -0.1640, -0.1360, -0.0930, -0.0475, -0.0085, 0.0085";
         System.out.println(str.length());
         System.out.println(str.getBytes().length);
@@ -43,14 +85,14 @@ public class TestClass {
 
         // （实数平方+ 虚数平方）开根号：
         double[] cur_fft = new double[realPart.length];
-        for(int i = 0; i< realPart.length; i++){
+        for (int i = 0; i < realPart.length; i++) {
             float x = realPart[i];
             BigDecimal bx = new BigDecimal(String.valueOf(x));
             double dx = bx.doubleValue();
             float y = imaginaryPart[i];
             BigDecimal by = new BigDecimal(String.valueOf(y));
             double dy = by.doubleValue();
-            cur_fft[i] = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy,2));
+            cur_fft[i] = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
         }
 
 

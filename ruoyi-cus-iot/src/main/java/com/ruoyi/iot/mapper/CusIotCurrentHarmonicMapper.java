@@ -28,6 +28,14 @@ public interface CusIotCurrentHarmonicMapper
     public List<CusIotCurrentHarmonic> selectCusIotCurrentHarmonicList(CusIotCurrentHarmonic cusIotCurrentHarmonic);
 
     /**
+     * 查询最新一条谐波电流数据详细信息
+     *
+     * @param deviceId 谐波电流数据主键
+     * @return 谐波电流数据
+     */
+    public CusIotCurrentHarmonic selectCusIoTCurrentHarmonicLatestOne(String deviceId);
+
+    /**
      * 新增谐波电流数据
      * 
      * @param cusIotCurrentHarmonic 谐波电流数据

@@ -20,6 +20,12 @@ public class CusIotPowerData extends BaseEntity {
     private Long id;
 
     /**
+     * 每条数据的UUID
+     */
+    @Excel(name = "每条数据的UUID")
+    private String UUID;
+
+    /**
      * 上传的时间戳（二进制解析成10进制）
      */
     @Excel(name = "上传的时间戳", readConverterExp = "二=进制解析成10进制")
@@ -69,6 +75,14 @@ public class CusIotPowerData extends BaseEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public void setUUID(String UUID) {
+        this.UUID = UUID;
+    }
+
+    public String getUUID() {
+        return UUID;
     }
 
     public void setTimestamp(Long timestamp) {
@@ -131,6 +145,7 @@ public class CusIotPowerData extends BaseEntity {
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
                 .append("id", getId())
+                .append("UUID", getUUID())
                 .append("timestamp", getTimestamp())
                 .append("deviceId", getDeviceId())
                 .append("type", getType())

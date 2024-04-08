@@ -17,6 +17,23 @@ export function getVoltage(id) {
   })
 }
 
+// 精确查询电压数据列表
+export function getVoltageByField(query) {
+  return request({
+    url: '/IoT/voltage/field',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询最新一条电压数据
+export function getLatestVoltage(deviceId) {
+  return request({
+    url: '/IoT/voltage/latest/' + deviceId,
+    method: 'get'
+  })
+}
+
 // 新增电压数据
 export function addVoltage(data) {
   return request({

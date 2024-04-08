@@ -70,6 +70,15 @@ public class CusIotCurrentHarmonicController extends BaseController
     }
 
     /**
+     * 查询最新一条谐波电流数据详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('IoT:harmonicCurrent:query')")
+    @GetMapping("/latest/{deviceId}")
+    public AjaxResult getLatestOne(@PathVariable("deviceId") String deviceId) {
+        return success(cusIotCurrentHarmonicService.selectCusIoTCurrentHarmonicLatestOne(deviceId));
+    }
+
+    /**
      * 新增谐波电流数据
      */
     @PreAuthorize("@ss.hasPermi('IoT:harmonicCurrent:add')")

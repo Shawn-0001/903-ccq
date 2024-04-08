@@ -17,6 +17,23 @@ export function getCurrent(id) {
   })
 }
 
+// 精确查询电流数据列表
+export function getCurrentByField(query) {
+  return request({
+    url: '/IoT/current/field',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询最新一条电流数据
+export function getLatestCurrent(deviceId) {
+  return request({
+    url: '/IoT/current/latest/' + deviceId,
+    method: 'get'
+  })
+}
+
 // 新增电流数据
 export function addCurrent(data) {
   return request({

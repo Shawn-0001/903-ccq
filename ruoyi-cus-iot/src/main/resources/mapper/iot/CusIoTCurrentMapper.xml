@@ -6,6 +6,7 @@
 
     <resultMap type="CusIoTCurrent" id="CusIoTCurrentResult">
         <result property="id" column="id"/>
+        <result property="UUID" column="uuid"/>
         <result property="timestamp" column="timestamp"/>
         <result property="deviceId" column="device_id"/>
         <result property="currentA1" column="current_a_1"/>
@@ -24,13 +25,27 @@
     </resultMap>
 
     <sql id="selectCusIoTCurrentVo">
-        select id, timestamp, device_id, current_a_1, current_a_2, current_a_fft, current_b_1, current_b_2, current_b_fft, current_c_1,
+        select id, uuid, timestamp, device_id, current_a_1, current_a_2, current_a_fft, current_b_1, current_b_2, current_b_fft, current_c_1,
         current_c_2, current_c_fft, create_by, create_time, update_by, update_time from cus_iot_current
     </sql>
 
     <select id="selectCusIoTCurrentList" parameterType="CusIoTCurrent" resultMap="CusIoTCurrentResult">
         <include refid="selectCusIoTCurrentVo"/>
         <where>
+            <if test="UUID != null ">and uuid = #{UUID}</if>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null ">and device_id = #{deviceId}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectCusIoTCurrentByField" parameterType="CusIoTCurrent" resultMap="CusIoTCurrentResult">
+        <include refid="selectCusIoTCurrentVo"/>
+        <where>
+            <if test="UUID != null ">and uuid = #{UUID}</if>
             <if test="timestamp != null ">and timestamp = #{timestamp}</if>
             <if test="deviceId != null ">and device_id = #{deviceId}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
@@ -44,9 +59,18 @@
         where id = #{id}
     </select>
 
+    <select id="selectCusIoTCurrentLatestOne" parameterType="String" resultMap="CusIoTCurrentResult">
+        <include refid="selectCusIoTCurrentVo"/>
+        <where>
+            <if test="deviceId != null ">and device_id = #{deviceId}</if>
+        </where>
+        ORDER BY id DESC LIMIT 0,1
+    </select>
+
     <insert id="insertCusIoTCurrent" parameterType="CusIoTCurrent" useGeneratedKeys="true" keyProperty="id">
         insert into cus_iot_current
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">uuid,</if>
             <if test="timestamp != null">timestamp,</if>
             <if test="deviceId != null">device_id,</if>
             <if test="currentA1 != null">current_a_1,</if>
@@ -62,6 +86,7 @@
             create_time
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">#{UUID},</if>
             <if test="timestamp != null">#{timestamp},</if>
             <if test="deviceId != null">#{deviceId},</if>
             <if test="currentA1 != null">#{currentA1},</if>
@@ -81,6 +106,7 @@
     <update id="updateCusIoTCurrent" parameterType="CusIoTCurrent">
         update cus_iot_current
         <trim prefix="SET" suffixOverrides=",">
+            <if test="UUID != null">uuid = #{UUID},</if>
             <if test="timestamp != null">timestamp = #{timestamp},</if>
             <if test="deviceId != null">device_id = #{deviceId},</if>
             <if test="currentA1 != null">current_a_1 = #{currentA1},</if>

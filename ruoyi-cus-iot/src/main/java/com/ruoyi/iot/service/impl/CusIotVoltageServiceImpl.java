@@ -2,6 +2,7 @@ package com.ruoyi.iot.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.iot.domain.CusIoTCurrent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.iot.mapper.CusIotVoltageMapper;
@@ -33,6 +34,18 @@ public class CusIotVoltageServiceImpl implements ICusIotVoltageService
     }
 
     /**
+     * 查询最新一条电压数据
+     *
+     * @param deviceId 设备编码
+     * @return 电压数据
+     */
+    @Override
+    public CusIotVoltage selectCusIoTVoltageLatestOne(String deviceId)
+    {
+        return cusIotVoltageMapper.selectCusIoTVoltageLatestOne(deviceId);
+    }
+
+    /**
      * 查询电压数据列表
      *
      * @param cusIotVoltage 电压数据
@@ -42,6 +55,15 @@ public class CusIotVoltageServiceImpl implements ICusIotVoltageService
     public List<CusIotVoltage> selectCusIotVoltageList(CusIotVoltage cusIotVoltage)
     {
         return cusIotVoltageMapper.selectCusIotVoltageList(cusIotVoltage);
+    }
+
+    /**
+     * 精确获取电流数据详细信息
+     * @param cusIotVoltage 电压数据
+     * @return 电流数据集合
+     */
+    public List<CusIotVoltage> selectCusIoTVoltageByField(CusIotVoltage cusIotVoltage){
+        return cusIotVoltageMapper.selectCusIoTVoltageByField(cusIotVoltage);
     }
 
     /**

@@ -28,6 +28,14 @@ public interface CusIotPowerDataMapper
     public List<CusIotPowerData> selectCusIotPowerDataList(CusIotPowerData cusIotPowerData);
 
     /**
+     *  精确查询功率数据列表
+     *
+     * @param cusIotPowerData 功率数据
+     * @return 功率数据集合
+     */
+    public List<CusIotPowerData> selectCusIotPowerDataByField(CusIotPowerData cusIotPowerData);
+
+    /**
      * 新增功率数据
      * 
      * @param cusIotPowerData 功率数据

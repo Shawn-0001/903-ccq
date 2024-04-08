@@ -11,8 +11,8 @@
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd" type="daterange"
-          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -43,15 +43,16 @@
     <el-table v-loading="loading" :data="harmonicVoltageList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="自增序列" align="center" prop="id" />
-      <el-table-column label="上传的时间戳" align="center" prop="timestamp" min-width="100px"/>
-      <el-table-column label="设备ID" align="center" prop="deviceId" min-width="150px"/>
-      <el-table-column label="A相谐波电压" align="center" prop="harmonicA" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="B相谐波电压" align="center" prop="harmonicB" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="C相谐波电压" align="center" prop="harmonicC" show-overflow-tooltip min-width="200px"/>
-      <el-table-column label="创建者" align="center" prop="createBy" min-width="120px"/>
+      <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />
+      <el-table-column label="上传的时间戳" align="center" prop="timestamp" min-width="120px" />
+      <el-table-column label="设备ID" align="center" prop="deviceId" min-width="150px" />
+      <el-table-column label="A相谐波电压" align="center" prop="harmonicA" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="B相谐波电压" align="center" prop="harmonicB" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="C相谐波电压" align="center" prop="harmonicC" show-overflow-tooltip min-width="200px" />
+      <el-table-column label="创建者" align="center" prop="createBy" min-width="120px" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}  {h}:{m}:{s}') }}</span>
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
