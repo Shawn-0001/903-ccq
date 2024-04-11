@@ -1,7 +1,7 @@
 <template>
     <div class="app-container home">
         <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
-            <el-descriptions title="欢迎使用电能监控系统" :column="4" :loading="loading">
+            <el-descriptions title="欢迎使用电能监控系统" :column="4">
 
                 <template slot="extra">
                     <el-button type="warning" size="small" @click="handleStopRefresh">停止自动刷新</el-button>
@@ -15,7 +15,7 @@
         </el-row>
 
         <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
-            <el-table v-loading="loading" :data="powerDataList">
+            <el-table :data="powerDataList">
                 <el-table-column label="设备ID" align="center" prop="deviceId" />
                 <el-table-column label="功率数据" align="center" prop="type">
                     <template slot-scope="{}" slot="header">
@@ -116,7 +116,6 @@ export default {
             // currentData: {},
             // 最新一条数据UUID
             latestUUID: null,
-            loading: true,
             chartDataFFT: {
                 currentFFT_A: null,
                 currentFFT_B: null,
@@ -284,7 +283,6 @@ export default {
                     }
                 });
             }
-            this.loading = false;
         },
         //  vue(组件)对象销毁之前，需要把定时器对象销毁
         beforeDestroy() {

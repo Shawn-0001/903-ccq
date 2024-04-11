@@ -11,8 +11,8 @@
         <el-input v-model="queryParams.deviceId" placeholder="" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange"
-          range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+        <el-date-picker v-model="daterangeCreateTime" style="width: 300px" value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -58,6 +58,7 @@
       <el-table-column label="电流C，周期2" align="center" prop="currentC2" show-overflow-tooltip min-width="200px" />
       <el-table-column label="电流C，周期1傅里叶转换后" align="center" prop="currentCFFT" show-overflow-tooltip
         min-width="200px" />
+      <el-table-column label="创建者" align="center" prop="createBy" min-width="120px" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -122,7 +123,7 @@
 </template>
 
 <script>
-import { listCurrent, getCurrent, delCurrent, addCurrent, updateCurrent } from "@/api/IoT/current"; 
+import { listCurrent, getCurrent, delCurrent, addCurrent, updateCurrent } from "@/api/IoT/current";
 
 export default {
   name: "Current",

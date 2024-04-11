@@ -1,7 +1,7 @@
 <template>
   <div class="app-container home">
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
-      <el-descriptions title="欢迎使用电能监控系统" :column="4" :loading="loading">
+      <el-descriptions title="欢迎使用电能监控系统" :column="4">
         <!-- <el-descriptions-item label="Received TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
           {{ powerDataDetail.createTime }}
         </el-descriptions-item>
@@ -39,34 +39,34 @@
     </el-row>
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <el-table v-loading="loading" :data="powerDataList">
-      <el-table-column label="设备ID" align="center" prop="deviceId" />
-      <el-table-column label="功率数据" align="center" prop="type">
-        <template slot-scope="{}" slot="header">
-          <span>功率数据</span>
-          <el-tooltip class="item" effect="dark" placement="top">
-            <i class="el-icon-question" style="font-size: 14px; vertical-align: middle;"></i>
-            <div slot="content">
-              <p>P ：有功功率</p>
-              <p>Q ：无功功率</p>
-              <p>C ：consinΦ,功率因素</p>
-            </div>
-          </el-tooltip>
-        </template>
-      </el-table-column>
-      <el-table-column label="A相" align="center" prop="phaseA" />
-      <el-table-column label="B相" align="center" prop="phaseB" />
-      <el-table-column label="C相" align="center" prop="phaseC" />
-      <el-table-column label="总计" align="center" prop="total" />
-      <el-table-column label="设备IP地址" align="center" prop="createBy" />
-      <el-table-column label="设备上传数据时间" align="center" prop="createTime" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />
-      <el-table-column label="上传的时间戳" align="center" prop="timestamp" />
-    </el-table>
+      <el-table :data="powerDataList">
+        <el-table-column label="设备ID" align="center" prop="deviceId" />
+        <el-table-column label="功率数据" align="center" prop="type">
+          <template slot-scope="{}" slot="header">
+            <span>功率数据</span>
+            <el-tooltip class="item" effect="dark" placement="top">
+              <i class="el-icon-question" style="font-size: 14px; vertical-align: middle;"></i>
+              <div slot="content">
+                <p>P ：有功功率</p>
+                <p>Q ：无功功率</p>
+                <p>C ：consinΦ,功率因素</p>
+              </div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column label="A相" align="center" prop="phaseA" />
+        <el-table-column label="B相" align="center" prop="phaseB" />
+        <el-table-column label="C相" align="center" prop="phaseC" />
+        <el-table-column label="总计" align="center" prop="total" />
+        <el-table-column label="设备IP地址" align="center" prop="createBy" />
+        <el-table-column label="设备上传数据时间" align="center" prop="createTime" width="180">
+          <template slot-scope="scope">
+            <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />
+        <el-table-column label="上传的时间戳" align="center" prop="timestamp" />
+      </el-table>
     </el-row>
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
@@ -116,7 +116,6 @@ export default {
       // currentData: {},
       // 最新一条数据UUID
       latestUUID: null,
-      loading: true,
       chartDataFFT: {
         currentFFT_A: null,
         currentFFT_B: null,
@@ -233,19 +232,17 @@ export default {
           UUID: this.latestUUID
         }
         getPowerDataByField(powerDataParams).then(res => {
-          console.log(res)
-          // 获取信息
-          this.powerDataDetail =
-          {
-            createTime: res.rows[0].createTime,
-            deviceId: res.rows[0].deviceId,
-            timestamp: res.rows[0].timestamp,
-            createBy: res.rows[0].createBy
-          }
+            // 获取信息
+            this.powerDataDetail =
+            {
+              createTime: res.rows[0].createTime,
+              deviceId: res.rows[0].deviceId,
+              timestamp: res.rows[0].timestamp,
+              createBy: res.rows[0].createBy
+            }
           this.powerDataList = res.rows
         })
       }
-      this.loading = false;
     },
     //  vue(组件)对象销毁之前，需要把定时器对象销毁
     beforeDestroy() {

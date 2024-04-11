@@ -72,7 +72,7 @@ export default {
         getDeviceList() {
             listDeviceList().then(res => {
                 this.deviceList = res.rows.map(item => {
-                    return { value: `${item.deviceId}`, label: `${item.createBy}` };
+                    return { value: `${item.deviceId}`, label: `${item.deviceId}` };
                 })
                 this.deviceId = this.deviceList[0].value
                 this.getData();

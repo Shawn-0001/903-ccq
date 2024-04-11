@@ -35,6 +35,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
     private ICusIotVoltageHarmonicService cusIotVoltageHarmonicService;
     @Autowired
     private ICusIotDeviceListService cusIotDeviceListService;
+    @Autowired
+    private ICusIotOriginalHistoryService cusIotOriginalHistoryService;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -60,6 +62,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
         CusIotCurrentHarmonic cusIotCurrentHarmonic = new CusIotCurrentHarmonic();
         // 设备列表
         CusIotDeviceList cusIotDeviceList = new CusIotDeviceList();
+        // 将接收的字符转换成16进制，存入数据库
+        CusIotOriginalHistory cusIotOriginalHistory = new CusIotOriginalHistory();
 
         // 设置唯一UUID， 使得每个表的数据都有唯一UUID关联，即同一个设备， 每推送一次数据，生成一个UUID进行关联， 该条数据的所有记录的UUID都相同
 //        cusIotDeviceList.setLatestUUID(currentUUID);  这里需要在下面判断完是否存在以后进行赋值，否则无法查找设备ID
@@ -70,6 +74,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
         cusIotPowerDataA.setUUID(currentUUID);
         cusIotPowerDataR.setUUID(currentUUID);
         cusIotPowerDataF.setUUID(currentUUID);
+        cusIotOriginalHistory.setUUID(currentUUID);
 
         // 获取提交的IP 地址
         InetSocketAddress ipSocket = (InetSocketAddress) ctx.channel().remoteAddress();
@@ -86,7 +91,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
         cusIotVoltageHarmonic.setCreateBy(IP);
         // 谐波电流数据来源IP地址
         cusIotCurrentHarmonic.setCreateBy(IP);
-
+        cusIotOriginalHistory.setCreateBy(IP);
 
         try {
             byte[] bytes = (byte[]) msg;
@@ -100,14 +105,16 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 2字节 count = 2; 不使用 68 3F
             count = 2;
             // 在全部字节数组中， 截取头部2字节
-//            byte[] segment_1 = subBytes(bytes, begin, count);
+            byte[] segment_1 = subBytes(bytes, begin, count);
             // 解析成16进制， 判断是否合规。
-            // 无需再次判断， 首次解析前，decoder已经判断完头部标识符合要求。
-//            String str1 = bytesToHexString(segment_1);
-//            if (!(StringUtils.equals(str1, "683f") || StringUtils.equals(str1, "683F"))) {
-//                logger.debug("第【1】段数据解析错误， 期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
-//                return;
-//            }
+            String str1 = bytesToHexString(segment_1);
+            if (!(StringUtils.equals(str1, "683f") || StringUtils.equals(str1, "683F"))) {
+                logger.debug("第【1】段数据解析错误， 期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
+                cusIotOriginalHistory.setData(bytesToHexString(bytes));
+                cusIotOriginalHistory.setRemark("第【1】段数据解析错误， 期望的数据头为 683F 或 683f， 得到的文件头为: " + str1);
+                cusIotOriginalHistoryService.insertCusIotOriginalHistory(cusIotOriginalHistory);
+                return;
+            }
             // 计算下一个段开始的位置
             begin = begin + count;
             logger.debug("第【1】段数据头校验通过，开始解析数据-->");
@@ -132,6 +139,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             cusIotVoltageHarmonic.setTimestamp((long) timestamp);
             // 谐波电流
             cusIotCurrentHarmonic.setTimestamp((long) timestamp);
+            // 解析原始数据记录
+            cusIotOriginalHistory.setTimestamp((long) timestamp);
 
             // 计算下一个段开始的位置
             begin = begin + count;
@@ -158,6 +167,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             cusIotCurrentHarmonic.setDeviceId(deviceId);
             // 设备列表
             cusIotDeviceList.setDeviceId(deviceId);
+            // 解析原始数据记录
+            cusIotOriginalHistory.setDeviceId(deviceId);
             // 判断ID是否存在
             List<CusIotDeviceList> devices = cusIotDeviceListService.selectCusIotDeviceListList(cusIotDeviceList);
             if(devices.size() > 0){
@@ -404,7 +415,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             String str4 = bytesToHexString(segment_4);
             // 解析成16进制， 判断是否合规。
             if (!(StringUtils.equals(str4, "0D0A") || StringUtils.equals(str4, "0d0a"))) {
-                logger.debug("第【1】段数据解析错误， 期望的数据头为 0D0A 或 0d0a， 得到的文件头为: " + str4);
+                logger.debug("第【1】段数据解析错误， 期望的数据结束位为 0D0A 或 0d0a， 得到的文件头为: " + str4);
+                cusIotOriginalHistory.setData(bytesToHexString(bytes));
+                cusIotOriginalHistory.setRemark("第【1】段数据解析错误， 期望的数据结束位为 0D0A 或 0d0a， 得到的文件头为: " + str4);
+                cusIotOriginalHistoryService.insertCusIotOriginalHistory(cusIotOriginalHistory);
                 return;
             }
             logger.debug("第【1】段数据结束位校验通过，解析完成 <--");
@@ -420,6 +434,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             String str5 = bytesToHexString(segment_5);
             if (!(StringUtils.equals(str5, "683f") || StringUtils.equals(str5, "683F"))) {
                 logger.debug("第【2】段数据解析错误，期望的数据头为 683F 或 683f， 得到的文件头为: " + str5);
+                cusIotOriginalHistory.setData(bytesToHexString(bytes));
+                cusIotOriginalHistory.setRemark("第【2】段数据解析错误，期望的数据头为 683F 或 683f， 得到的文件头为: " + str5);
+                cusIotOriginalHistoryService.insertCusIotOriginalHistory(cusIotOriginalHistory);
                 return;
             }
             // 计算下一个段开始的位置
@@ -574,6 +591,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 解析成16进制， 判断是否合规。
             if (!(StringUtils.equals(str11, "0D0A") || StringUtils.equals(str11, "0d0a"))) {
                 logger.debug("第【2】段数据解析错误， 期望的数据结束位为 0D0A 或 0d0a， 得到的文件头为: " + str11);
+                cusIotOriginalHistory.setData(bytesToHexString(bytes));
+                cusIotOriginalHistory.setRemark("第【2】段数据解析错误， 期望的数据结束位为 0D0A 或 0d0a， 得到的文件头为: " + str11);
+                cusIotOriginalHistoryService.insertCusIotOriginalHistory(cusIotOriginalHistory);
                 return;
             }
             logger.debug("第【2】段数据结束位校验通过，解析完成 <--");
@@ -585,6 +605,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             cusIotPowerDataService.insertCusIotPowerData(cusIotPowerDataF);
             cusIotCurrentHarmonicService.insertCusIotCurrentHarmonic(cusIotCurrentHarmonic);
             cusIotVoltageHarmonicService.insertCusIotVoltageHarmonic(cusIotVoltageHarmonic);
+            // 解析成功， 记录原值
+            cusIotOriginalHistory.setData(bytesToHexString(bytes));
+            cusIotOriginalHistory.setRemark("数据解析成功!");
+            cusIotOriginalHistoryService.insertCusIotOriginalHistory(cusIotOriginalHistory);
             // 向客户端回写数据
         } catch (Exception e) {
             e.printStackTrace();

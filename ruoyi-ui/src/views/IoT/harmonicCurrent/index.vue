@@ -14,7 +14,7 @@
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+        <el-date-picker v-model="daterangeCreateTime" style="width: 300px" value-format="yyyy-MM-dd HH:mm:ss"
           type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>

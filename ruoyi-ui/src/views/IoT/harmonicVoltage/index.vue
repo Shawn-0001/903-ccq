@@ -11,7 +11,7 @@
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
       <el-form-item label="创建时间">
-        <el-date-picker v-model="daterangeCreateTime" style="width: 240px" value-format="yyyy-MM-dd HH:mm:ss"
+        <el-date-picker v-model="daterangeCreateTime" style="width: 300px" value-format="yyyy-MM-dd HH:mm:ss"
           type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -21,7 +21,7 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+      <!-- <el-col :span="1.5">
         <el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
           v-hasPermi="['IoT:harmonicVoltage:add']">新增</el-button>
       </el-col>
@@ -32,7 +32,7 @@
       <el-col :span="1.5">
         <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete"
           v-hasPermi="['IoT:harmonicVoltage:remove']">删除</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="1.5">
         <el-button type="warning" plain icon="el-icon-download" size="mini" @click="handleExport"
           v-hasPermi="['IoT:harmonicVoltage:export']">导出</el-button>

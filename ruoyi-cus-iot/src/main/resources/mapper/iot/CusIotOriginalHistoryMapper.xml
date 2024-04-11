@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.iot.mapper.CusIotOriginalHistoryMapper">
+
+    <resultMap type="CusIotOriginalHistory" id="CusIotOriginalHistoryResult">
+        <result property="id" column="id"/>
+        <result property="UUID" column="uuid"/>
+        <result property="timestamp" column="timestamp"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="data" column="data"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectCusIotOriginalHistoryVo">
+        select id, uuid, timestamp, device_id, data, remark, create_by, create_time, update_by, update_time from cus_iot_original_history
+    </sql>
+
+    <select id="selectCusIotOriginalHistoryList" parameterType="CusIotOriginalHistory" resultMap="CusIotOriginalHistoryResult">
+        <include refid="selectCusIotOriginalHistoryVo"/>
+        <where>
+            <if test="UUID != null  and UUID != ''">and uuid like concat('%', #{UUID}, '%')</if>
+            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="deviceId != null  and deviceId != ''">and device_id like concat('%', #{deviceId}, '%')</if>
+            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectCusIotOriginalHistoryById" parameterType="Long" resultMap="CusIotOriginalHistoryResult">
+        <include refid="selectCusIotOriginalHistoryVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertCusIotOriginalHistory" parameterType="CusIotOriginalHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into cus_iot_original_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">uuid,</if>
+            <if test="timestamp != null">timestamp,</if>
+            <if test="deviceId != null">device_id,</if>
+            <if test="data != null">data,</if>
+            <if test="remark != null">remark,</if>
+            create_by,
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="UUID != null">#{UUID},</if>
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="deviceId != null">#{deviceId},</if>
+            <if test="data != null">#{data},</if>
+            <if test="remark != null">#{remark},</if>
+            #{createBy},
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateCusIotOriginalHistory" parameterType="CusIotOriginalHistory">
+        update cus_iot_original_history
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="UUID != null">uuid = #{UUID},</if>
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="data != null">data = #{data},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCusIotOriginalHistoryById" parameterType="Long">
+        delete from cus_iot_original_history where id = #{id}
+    </delete>
+
+    <delete id="deleteCusIotOriginalHistoryByIds" parameterType="String">
+        delete from cus_iot_original_history where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

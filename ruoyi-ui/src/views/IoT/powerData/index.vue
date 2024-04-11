@@ -116,7 +116,7 @@
 </template>
 
 <script>
-import { listPowerData, getPowerData, delPowerData, addPowerData, updatePowerData } from "@/api/IoT/powerData";
+import { listPowerData } from "@/api/IoT/powerData";
 
 export default {
   name: "PowerData",
