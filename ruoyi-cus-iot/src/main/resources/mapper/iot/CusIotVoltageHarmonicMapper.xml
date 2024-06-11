@@ -26,11 +26,15 @@
     <select id="selectCusIotVoltageHarmonicList" parameterType="CusIotVoltageHarmonic" resultMap="CusIotVoltageHarmonicResult">
         <include refid="selectCusIotVoltageHarmonicVo"/>
         <where>
-            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
+            <if test="UUID != null and UUID != ''">and uuid = #{UUID}</if>
             <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
-            <if test="createBy != null  and createBy != ''">and create_by = #{createBy}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
                 and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+            <!--如果查询条件为空，那么数据库count（*）非常慢， 70w数据60秒， 增加条件 uuid != ‘’进行count（*）， 70w数据， 0.3秒-->
+            <if test=" !(UUID != null and UUID != '') and !(deviceId != null  and deviceId != '') and
+            !(params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != '')">
+                and uuid != ''
             </if>
         </where>
         order by id desc

@@ -4,15 +4,15 @@
       <el-form-item label="UUID" prop="UUID">
         <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="时间戳" prop="timestamp">
+      <!-- <el-form-item label="时间戳" prop="timestamp">
         <el-input v-model="queryParams.timestamp" placeholder="请输入时间戳" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="设备ID" prop="deviceId">
         <el-input v-model="queryParams.deviceId" placeholder="请输入设备ID" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="创建者" prop="createBy">
+      <!-- <el-form-item label="创建者" prop="createBy">
         <el-input v-model="queryParams.createBy" placeholder="请输入创建者" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="创建时间">
         <el-date-picker v-model="daterangeCreateTime" style="width: 300px" value-format="yyyy-MM-dd HH:mm:ss"
           type="datetimerange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>

@@ -43,6 +43,10 @@ public class CusIotVoltage extends BaseEntity {
     @Excel(name = "电压A，周期1")
     private String voltageA1;
 
+    /** 电压A，周期1傅里叶转换后结果 */
+    @Excel(name = "电压A，周期1傅里叶转换后结果")
+    private String voltageAFFT;
+
     /**
      * 电压A，周期2
      */
@@ -55,6 +59,10 @@ public class CusIotVoltage extends BaseEntity {
     @Excel(name = "电压B，周期1")
     private String voltageB1;
 
+    /** 电压B，周期1傅里叶转换后结果 */
+    @Excel(name = "电压B，周期1傅里叶转换后结果")
+    private String voltageBFFT;
+
     /**
      * 电压B，周期2
      */
@@ -66,6 +74,10 @@ public class CusIotVoltage extends BaseEntity {
      */
     @Excel(name = "电压C，周期1")
     private String voltageC1;
+
+    /** 电压C，周期1傅里叶转换后结果 */
+    @Excel(name = "电压C，周期1傅里叶转换后结果")
+    private String voltageCFFT;
 
     /**
      * 电压C，周期2
@@ -109,6 +121,14 @@ public class CusIotVoltage extends BaseEntity {
         this.voltageA1 = voltageA1;
     }
 
+    public String getVoltageAFFT() {
+        return voltageAFFT;
+    }
+
+    public void setVoltageAFFT(String voltageAFFT) {
+        this.voltageAFFT = voltageAFFT;
+    }
+
     public String getVoltageA1() {
         return voltageA1;
     }
@@ -129,6 +149,14 @@ public class CusIotVoltage extends BaseEntity {
         return voltageB1;
     }
 
+    public void setVoltageBFFT(String voltageBFFT) {
+        this.voltageBFFT = voltageBFFT;
+    }
+
+    public String getVoltageBFFT() {
+        return voltageBFFT;
+    }
+
     public void setVoltageB2(String voltageB2) {
         this.voltageB2 = voltageB2;
     }
@@ -143,6 +171,14 @@ public class CusIotVoltage extends BaseEntity {
 
     public String getVoltageC1() {
         return voltageC1;
+    }
+
+    public String getVoltageCFFT() {
+        return voltageCFFT;
+    }
+
+    public void setVoltageCFFT(String voltageCFFT) {
+        this.voltageCFFT = voltageCFFT;
     }
 
     public void setVoltageC2(String voltageC2) {
@@ -162,10 +198,13 @@ public class CusIotVoltage extends BaseEntity {
                 .append("deviceId", getDeviceId())
                 .append("voltageA1", getVoltageA1())
                 .append("voltageA2", getVoltageA2())
+                .append("voltageAFFT", getVoltageAFFT())
                 .append("voltageB1", getVoltageB1())
                 .append("voltageB2", getVoltageB2())
+                .append("voltageBFFT", getVoltageBFFT())
                 .append("voltageC1", getVoltageC1())
                 .append("voltageC2", getVoltageC2())
+                .append("voltageCFFT", getVoltageCFFT())
                 .append("createBy", getCreateBy())
                 .append("createTime", getCreateTime())
                 .append("updateBy", getUpdateBy())

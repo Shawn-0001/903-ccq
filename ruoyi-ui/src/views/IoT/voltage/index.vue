@@ -5,10 +5,10 @@
             <el-form-item label="UUID" prop="UUID">
                 <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="时间戳" prop="timestamp">
+            <!-- <el-form-item label="时间戳" prop="timestamp">
                 <el-input v-model="queryParams.timestamp" placeholder="请输入时间戳" clearable
                     @keyup.enter.native="handleQuery" />
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="设备ID" prop="deviceId">
                 <el-input v-model="queryParams.deviceId" placeholder="请输入设备ID" clearable
                     @keyup.enter.native="handleQuery" />
@@ -52,10 +52,16 @@
             <el-table-column label="设备ID" align="center" prop="deviceId" min-width="150px" />
             <el-table-column label="电压A，周期1" align="center" prop="voltageA1" show-overflow-tooltip min-width="200px" />
             <el-table-column label="电压A，周期2" align="center" prop="voltageA2" show-overflow-tooltip min-width="200px" />
+            <el-table-column label="电压A，周期1傅里叶转换后" align="center" prop="voltageAFFT" show-overflow-tooltip
+                min-width="200px" />
             <el-table-column label="电压B，周期1" align="center" prop="voltageB1" show-overflow-tooltip min-width="200px" />
             <el-table-column label="电压B，周期2" align="center" prop="voltageB2" show-overflow-tooltip min-width="200px" />
+            <el-table-column label="电压B，周期1傅里叶转换后" align="center" prop="voltageBFFT" show-overflow-tooltip
+                min-width="200px" />
             <el-table-column label="电压C，周期1" align="center" prop="voltageC1" show-overflow-tooltip min-width="200px" />
             <el-table-column label="电压C，周期2" align="center" prop="voltageC2" show-overflow-tooltip min-width="200px" />
+            <el-table-column label="电压C，周期1傅里叶转换后" align="center" prop="voltageCFFT" show-overflow-tooltip
+                min-width="200px" />
             <el-table-column label="创建者" align="center" prop="createBy" min-width="120px" />
             <el-table-column label="创建时间" align="center" prop="createTime" width="180">
                 <template slot-scope="scope">

@@ -2,16 +2,16 @@
     <div class="app-container">
         <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
             <el-descriptions title="电流数据" :column="4" :loading="loading">
-                <el-descriptions-item label="Received TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="接收时间:" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ currentData.createTime }}
                 </el-descriptions-item>
-                <el-descriptions-item label="deviceId: " :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备ID: " :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ currentData.deviceId }}
                 </el-descriptions-item>
-                <el-descriptions-item label="Device TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备时间戳:" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ currentData.timestamp }}
                 </el-descriptions-item>
-                <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备IP:" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ currentData.createBy }}
                 </el-descriptions-item>
 
@@ -62,11 +62,15 @@ export default {
                 currentFFT_A: null,
                 currentFFT_B: null,
                 currentFFT_C: null,
+                chartTitile: '电流谐波',
+                legend: ['A相谐波', 'B相谐波', 'C相谐波']
             },
             chartDataCurrent: {
                 currentFFT_A: null,
                 currentFFT_B: null,
                 currentFFT_C: null,
+                chartTitile: '电流',
+                legend: ['A相', 'B相', 'C相']
             }
         }
     },
@@ -94,18 +98,21 @@ export default {
         },
         /** 查询电流数据列表 */
         getData() {
-            console.log("get data")
             getLatestCurrent(this.deviceId).then(response => {
                 // 清空数据
                 this.chartDataFFT = {
                     currentFFT_A: null,
                     currentFFT_B: null,
                     currentFFT_C: null,
+                    chartTitile: '电流谐波',
+                    legend: ['A相谐波', 'B相谐波', 'C相谐波']
                 }
                 this.chartDataCurrent = {
                     currentFFT_A: null,
                     currentFFT_B: null,
                     currentFFT_C: null,
+                    chartTitile: '电流',
+                    legend: ['A相', 'B相', 'C相']
                 }
                 this.currentData = {}
                 // 获取信息
@@ -116,18 +123,32 @@ export default {
                     timestamp: response.data.timestamp,
                     createBy: response.data.createBy
                 }
+
+
+                // 获取信息转数组
+                let currentAFFT_28 = JSON.parse(response.data.currentAFFT).slice(0, 28)
+                let currentBFFT_28 = JSON.parse(response.data.currentBFFT).slice(0, 28)
+                let currentCFFT_28 = JSON.parse(response.data.currentCFFT).slice(0, 28)
                 this.chartDataFFT = {
-                    currentFFT_A: eval(response.data.currentAFFT),
-                    currentFFT_B: eval(response.data.currentBFFT),
-                    currentFFT_C: eval(response.data.currentCFFT)
+                    currentFFT_A: currentAFFT_28,
+                    currentFFT_B: currentBFFT_28,
+                    currentFFT_C: currentCFFT_28,
+                    // currentFFT_A: eval(response.data.currentAFFT),
+                    // currentFFT_B: eval(response.data.currentBFFT),
+                    // currentFFT_C: eval(response.data.currentCFFT),
+                    chartTitile: '电流谐波',
+                    legend: ['A相谐波', 'B相谐波', 'C相谐波']
                 }
+
                 let currentA = eval(response.data.currentA1).concat(eval(response.data.currentA2))
                 let currentB = eval(response.data.currentB1).concat(eval(response.data.currentB2))
                 let currentC = eval(response.data.currentC1).concat(eval(response.data.currentC2))
                 this.chartDataCurrent = {
                     currentFFT_A: currentA,
                     currentFFT_B: currentB,
-                    currentFFT_C: currentC
+                    currentFFT_C: currentC,
+                    chartTitile: '电流',
+                    legend: ['A相', 'B相', 'C相']
                 }
                 this.loading = false;
             });

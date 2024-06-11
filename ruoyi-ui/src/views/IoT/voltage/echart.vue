@@ -2,16 +2,16 @@
     <div class="app-container">
         <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
             <el-descriptions title="电压数据" :column="4" :loading="loading">
-                <el-descriptions-item label="Received TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="接收时间:" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ voltageData.createTime }}
                 </el-descriptions-item>
-                <el-descriptions-item label="deviceId: " :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备ID: " :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ voltageData.deviceId }}
                 </el-descriptions-item>
-                <el-descriptions-item label="Device TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备时间戳:" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ voltageData.timestamp }}
                 </el-descriptions-item>
-                <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
+                <el-descriptions-item label="设备IP：" :contentStyle='normal' :labelStyle='labelStyle'>
                     {{ voltageData.createBy }}
                 </el-descriptions-item>
 
@@ -24,8 +24,29 @@
             </el-descriptions>
         </el-row>
 
-        <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-            <voltage :chart-data="chartDataVoltage" />
+        <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
+            <el-col :xs="24" :sm="24" :lg="24">
+                <div class="chart-wrapper">
+                    <voltage :chart-data="chartDataVoltage" />
+                </div>
+            </el-col>
+            <!-- <el-col :xs="24" :sm="24" :lg="12">
+                <div class="chart-wrapper">
+                    <voltage :chart-data="chartDataVoltageFFT" />
+                </div>
+            </el-col> -->
+        </el-row>
+        <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
+            <!-- <el-col :xs="24" :sm="24" :lg="12">
+                <div class="chart-wrapper">
+                    <voltage :chart-data="chartDataVoltage" />
+                </div>
+            </el-col> -->
+            <el-col :xs="24" :sm="24" :lg="24">
+                <div class="chart-wrapper">
+                    <voltage :chart-data="chartDataVoltageFFT" />
+                </div>
+            </el-col>
         </el-row>
 
     </div>
@@ -58,6 +79,15 @@ export default {
                 voltage_A: null,
                 voltage_B: null,
                 voltage_C: null,
+                chartTitile: '电压',
+                legend: ['A相', 'B相', 'C相']
+            },
+            chartDataVoltageFFT: {
+                voltage_A: null,
+                voltage_B: null,
+                voltage_C: null,
+                chartTitile: '电压谐波',
+                legend: ['A相谐波', 'B相谐波', 'C相谐波']
             },
         }
     },
@@ -92,6 +122,15 @@ export default {
                     voltage_A: null,
                     voltage_B: null,
                     voltage_C: null,
+                    chartTitile: '电压',
+                    legend: ['A相', 'B相', 'C相']
+                }
+                this.chartDataVoltageFFT = {
+                    voltage_A: null,
+                    voltage_B: null,
+                    voltage_C: null,
+                    chartTitile: '电压谐波',
+                    legend: ['A相谐波', 'B相谐波', 'C相谐波']
                 }
                 this.voltageData = {}
                 // 获取信息
@@ -102,13 +141,30 @@ export default {
                     timestamp: response.data.timestamp,
                     createBy: response.data.createBy
                 }
-                let currentA = eval(response.data.voltageA1).concat(eval(response.data.voltageA2))
-                let currentB = eval(response.data.voltageB1).concat(eval(response.data.voltageB2))
-                let currentC = eval(response.data.voltageC1).concat(eval(response.data.voltageC2))
+                let voltageA = eval(response.data.voltageA1).concat(eval(response.data.voltageA2))
+                let voltageB = eval(response.data.voltageB1).concat(eval(response.data.voltageB2))
+                let voltageC = eval(response.data.voltageC1).concat(eval(response.data.voltageC2))
                 this.chartDataVoltage = {
-                    voltage_A: currentA,
-                    voltage_B: currentB,
-                    voltage_C: currentC
+                    voltage_A: voltageA,
+                    voltage_B: voltageB,
+                    voltage_C: voltageC,
+                    chartTitile: '电压',
+                    legend: ['A相', 'B相', 'C相']
+                }
+
+                // 获取信息转数组
+                let voltageAFFT_28 = JSON.parse(response.data.voltageAFFT).slice(0, 28)
+                let voltageBFFT_28 = JSON.parse(response.data.voltageBFFT).slice(0, 28)
+                let voltageCFFT_28 = JSON.parse(response.data.voltageCFFT).slice(0, 28)
+                this.chartDataVoltageFFT = {
+                    voltage_A: voltageAFFT_28,
+                    voltage_B: voltageBFFT_28,
+                    voltage_C: voltageCFFT_28,
+                    // voltage_A: eval(response.data.voltageAFFT),
+                    // voltage_B: eval(response.data.voltageBFFT),
+                    // voltage_C: eval(response.data.voltageCFFT),
+                    chartTitile: '电压谐波',
+                    legend: ['A相谐波', 'B相谐波', 'C相谐波']
                 }
                 this.loading = false;
             });

@@ -1,32 +1,22 @@
 <template>
   <div class="app-container home">
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
-      <el-descriptions title="欢迎使用电能监控系统" :column="4">
-        <!-- <el-descriptions-item label="Received TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createTime }}
-        </el-descriptions-item>
-        <el-descriptions-item label="deviceId: " :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.deviceId }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device TimeStamp:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.timestamp }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createBy }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createBy }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createBy }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createBy }}
-        </el-descriptions-item>
-        <el-descriptions-item label="Device IP:" :contentStyle='normal' :labelStyle='labelStyle'>
-          {{ powerDataDetail.createBy }}
-        </el-descriptions-item> -->
-
+      <el-descriptions title="" :column="4">
+        <template slot="title">
+          <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
+            <el-col>
+              <div>
+                <span style="font-size: large;">欢迎使用电能监控系统</span>
+                <span style="margin-left: 100px; font-size: small;">系统时间： </span>
+                <span style="font-size: small; color:#4169E1">{{ currentTime }}</span>
+                <span style="margin-left: 20px; font-size: small;">当前数据接收时间：</span>
+                <span style="font-size: small; color:#4169E1">{{ currentDataTime }}</span>
+                <span style="margin-left: 100px; font-size: small;">自动刷新开关 ： </span>
+                <span style="font-size: small; color:#4169E1">{{ isTimerRunning }}</span>
+              </div>
+            </el-col>
+          </el-row>
+        </template>
         <template slot="extra">
           <el-button type="warning" size="small" @click="handleStopRefresh">停止自动刷新</el-button>
           <el-button type="success" size="small" @click="handleStartRefresh">启动刷新（默认自动启动）</el-button>
@@ -69,16 +59,29 @@
       </el-table>
     </el-row>
 
-    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <currentFFT :chart-data="chartDataCurrent" />
+    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
+      <el-col :xs="24" :sm="24" :lg="12">
+        <div class="chart-wrapper">
+          <voltage :chart-data="chartDataVoltage" />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="12">
+        <div class="chart-wrapper">
+          <voltage :chart-data="chartDataVoltageFFT" />
+        </div>
+      </el-col>
     </el-row>
-
-    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <currentFFT :chart-data="chartDataFFT" />
-    </el-row>
-
-    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <voltage :chart-data="chartDataVoltage" />
+    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:0px;">
+      <el-col :xs="24" :sm="24" :lg="12">
+        <div class="chart-wrapper">
+          <currentFFT :chart-data="chartDataCurrent" />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="12">
+        <div class="chart-wrapper">
+          <currentFFT :chart-data="chartDataFFT" />
+        </div>
+      </el-col>
     </el-row>
 
   </div>
@@ -112,24 +115,41 @@ export default {
       // 功率因数详细信息
       powerDataDetail: {},
       powerDataList: [],
-      // // 电流详细信息
-      // currentData: {},
+      // 显示系统时间
+      currentTime: '',
+      // 显示当前数据接收时间
+      currentDataTime: '',
+      // 判断定时器是否运行
+      isTimerRunning: '开',
       // 最新一条数据UUID
       latestUUID: null,
       chartDataFFT: {
         currentFFT_A: null,
         currentFFT_B: null,
         currentFFT_C: null,
+        chartTitile: '电流谐波',
+        legend: ['A相谐波', 'B相谐波', 'C相谐波']
+      },
+      chartDataVoltageFFT: {
+        voltageFFT_A: null,
+        voltageFFT_B: null,
+        voltageFFT_C: null,
+        chartTitile: '电压谐波',
+        legend: ['A相谐波', 'B相谐波', 'C相谐波']
       },
       chartDataCurrent: {
         currentFFT_A: null,
         currentFFT_B: null,
         currentFFT_C: null,
+        chartTitile: '电流',
+        legend: ['A相', 'B相', 'C相']
       },
       chartDataVoltage: {
         voltage_A: null,
         voltage_B: null,
         voltage_C: null,
+        chartTitile: '电压',
+        legend: ['A相', 'B相', 'C相']
       },
     };
   },
@@ -137,14 +157,26 @@ export default {
     this.getDeviceList();
   },
   mounted: function () {
+    this.currentTimer = setInterval(this.getCurrentTime, 1000);//每秒运行一次
     this.timer = setInterval(this.getData, 10000);//10秒后运行 getData方法
   },
   methods: {
     handleStopRefresh() {
       clearInterval(this.timer)
+      // 设置刷新状态
+      this.isTimerRunning = '关'
     },
     handleStartRefresh() {
+      if (this.timer) {
+        clearInterval(this.timer)
+      }
+      this.getData()
       this.timer = setInterval(this.getData, 10000);//10秒后运行 getData方法
+      // 设置刷新状态
+      this.isTimerRunning = '开'
+    },
+    getCurrentTime() {
+      this.currentTime = this.parseTime(new Date())
     },
     /** 查询设备列表 */
     getDeviceList() {
@@ -163,7 +195,7 @@ export default {
     },
     /** 查询数据列表 */
     async getData() {
-      console.log("get data")
+      console.log("get data at:" + this.currentTime)
       // 获取device ID对应的最新UUID
       let deviceParams = {
         deviceId: this.deviceId
@@ -180,30 +212,43 @@ export default {
         }
         // 同步请求
         await getCurrentByField(currentParams).then(response => {
-          // 清空数据
-          this.chartDataFFT = {
-            currentFFT_A: null,
-            currentFFT_B: null,
-            currentFFT_C: null,
-          }
-          this.chartDataCurrent = {
-            currentFFT_A: null,
-            currentFFT_B: null,
-            currentFFT_C: null,
-          }
-          // 获取信息转数组
-          this.chartDataFFT = {
-            currentFFT_A: eval(response.rows[0].currentAFFT),
-            currentFFT_B: eval(response.rows[0].currentBFFT),
-            currentFFT_C: eval(response.rows[0].currentCFFT)
-          }
-          let currentA = eval(response.rows[0].currentA1).concat(eval(response.rows[0].currentA2))
-          let currentB = eval(response.rows[0].currentB1).concat(eval(response.rows[0].currentB2))
-          let currentC = eval(response.rows[0].currentC1).concat(eval(response.rows[0].currentC2))
-          this.chartDataCurrent = {
-            currentFFT_A: currentA,
-            currentFFT_B: currentB,
-            currentFFT_C: currentC
+          if (response.rows !== '') {
+            // 清空数据
+            this.chartDataFFT = {
+              currentFFT_A: null,
+              currentFFT_B: null,
+              currentFFT_C: null,
+            }
+            this.chartDataCurrent = {
+              currentFFT_A: null,
+              currentFFT_B: null,
+              currentFFT_C: null,
+            }
+            // 获取信息转数组
+            let currentAFFT_28 = JSON.parse(response.rows[0].currentAFFT).slice(0, 28)
+            let currentBFFT_28 = JSON.parse(response.rows[0].currentBFFT).slice(0, 28)
+            let currentCFFT_28 = JSON.parse(response.rows[0].currentCFFT).slice(0, 28)
+
+            this.chartDataFFT = {
+              currentFFT_A: currentAFFT_28,
+              currentFFT_B: currentBFFT_28,
+              currentFFT_C: currentCFFT_28,
+              chartTitile: '电流谐波',
+              legend: ['A相谐波', 'B相谐波', 'C相谐波']
+            }
+
+            let currentA = eval(response.rows[0].currentA1).concat(eval(response.rows[0].currentA2))
+            let currentB = eval(response.rows[0].currentB1).concat(eval(response.rows[0].currentB2))
+            let currentC = eval(response.rows[0].currentC1).concat(eval(response.rows[0].currentC2))
+            this.chartDataCurrent = {
+              currentFFT_A: currentA,
+              currentFFT_B: currentB,
+              currentFFT_C: currentC,
+              chartTitile: '电流',
+              legend: ['A相', 'B相', 'C相']
+            }
+          } else {
+            this.$modal.msgWarning("未找到最新数据! ");
           }
         });
         // 获取电压数据
@@ -211,20 +256,48 @@ export default {
           UUID: this.latestUUID
         }
         await getVoltageByField(voltageParams).then(response => {
-          // 清空数据
-          this.chartDataVoltage = {
-            voltage_A: null,
-            voltage_B: null,
-            voltage_C: null,
-          }
-          // 获取信息
-          let currentA = eval(response.rows[0].voltageA1).concat(eval(response.rows[0].voltageA2))
-          let currentB = eval(response.rows[0].voltageB1).concat(eval(response.rows[0].voltageB2))
-          let currentC = eval(response.rows[0].voltageC1).concat(eval(response.rows[0].voltageC2))
-          this.chartDataVoltage = {
-            voltage_A: currentA,
-            voltage_B: currentB,
-            voltage_C: currentC
+          if (response.rows !== '') {
+            // 清空数据
+            this.chartDataVoltage = {
+              voltage_A: null,
+              voltage_B: null,
+              voltage_C: null,
+              chartTitile: '电压',
+              legend: ['A相', 'B相', 'C相']
+            }
+            this.chartDataVoltageFFT = {
+              voltage_A: null,
+              voltage_B: null,
+              voltage_C: null,
+              chartTitile: '电压谐波',
+              legend: ['A相谐波', 'B相谐波', 'C相谐波']
+            }
+            // 获取信息
+            let voltageA = eval(response.rows[0].voltageA1).concat(eval(response.rows[0].voltageA2))
+            let voltageB = eval(response.rows[0].voltageB1).concat(eval(response.rows[0].voltageB2))
+            let voltageC = eval(response.rows[0].voltageC1).concat(eval(response.rows[0].voltageC2))
+            this.chartDataVoltage = {
+              voltage_A: voltageA,
+              voltage_B: voltageB,
+              voltage_C: voltageC,
+              chartTitile: '电压',
+              legend: ['A相', 'B相', 'C相']
+            }
+
+            let voltageAFFT_28 = JSON.parse(response.rows[0].voltageAFFT).slice(0, 28)
+            let voltageBFFT_28 = JSON.parse(response.rows[0].voltageBFFT).slice(0, 28)
+            let voltageCFFT_28 = JSON.parse(response.rows[0].voltageCFFT).slice(0, 28)
+
+
+            this.chartDataVoltageFFT = {
+              voltage_A: voltageAFFT_28,
+              voltage_B: voltageBFFT_28,
+              voltage_C: voltageCFFT_28,
+              chartTitile: '电压谐波',
+              legend: ['A相谐波', 'B相谐波', 'C相谐波']
+            }
+          } else {
+            this.$modal.msgWarning("未找到最新数据! ");
           }
         });
         // 获取功率因数数据
@@ -232,21 +305,23 @@ export default {
           UUID: this.latestUUID
         }
         getPowerDataByField(powerDataParams).then(res => {
-            // 获取信息
-            this.powerDataDetail =
-            {
-              createTime: res.rows[0].createTime,
-              deviceId: res.rows[0].deviceId,
-              timestamp: res.rows[0].timestamp,
-              createBy: res.rows[0].createBy
-            }
+          // 获取信息
+          this.powerDataDetail =
+          {
+            createTime: res.rows[0].createTime,
+            deviceId: res.rows[0].deviceId,
+            timestamp: res.rows[0].timestamp,
+            createBy: res.rows[0].createBy
+          }
           this.powerDataList = res.rows
+          this.currentDataTime = res.rows[0].createTime
         })
       }
     },
     //  vue(组件)对象销毁之前，需要把定时器对象销毁
     beforeDestroy() {
       clearInterval(this.timer);
+      clearInterval(this.currentTimer);
     }
   }
 };

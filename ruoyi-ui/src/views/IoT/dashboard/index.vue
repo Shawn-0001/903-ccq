@@ -120,26 +120,36 @@ export default {
                 currentFFT_A: null,
                 currentFFT_B: null,
                 currentFFT_C: null,
+                chartTitile: null,
+                legend: null
             },
             chartDataCurrent: {
                 currentFFT_A: null,
                 currentFFT_B: null,
                 currentFFT_C: null,
+                chartTitile: null,
+                legend: null
             },
             chartDataVoltage: {
                 voltage_A: null,
                 voltage_B: null,
                 voltage_C: null,
+                chartTitile: null,
+                legend: null
             },
             chartDataHarmonicCurrent: {
                 harmonicCurrent_A: null,
                 harmonicCurrent_B: null,
                 harmonicCurrent_C: null,
+                chartTitile: null,
+                legend: null
             },
             chartDataHarmonicVoltage: {
                 harmonicVoltage_A: null,
                 harmonicVoltage_B: null,
                 harmonicVoltage_C: null,
+                chartTitile: null,
+                legend: null
             }
         };
     },
@@ -195,17 +205,23 @@ export default {
                         currentFFT_A: null,
                         currentFFT_B: null,
                         currentFFT_C: null,
+                        chartTitile: null,
+                        legend: null
                     }
                     this.chartDataCurrent = {
                         currentFFT_A: null,
                         currentFFT_B: null,
                         currentFFT_C: null,
+                        chartTitile: null,
+                        legend: null
                     }
                     // 获取信息转数组
                     this.chartDataFFT = {
                         currentFFT_A: eval(response.rows[0].currentAFFT),
                         currentFFT_B: eval(response.rows[0].currentBFFT),
-                        currentFFT_C: eval(response.rows[0].currentCFFT)
+                        currentFFT_C: eval(response.rows[0].currentCFFT),
+                        chartTitile: '电流谐波',
+                        legend: ['A相谐波', 'B相谐波', 'C相谐波']
                     }
                     let currentA = eval(response.rows[0].currentA1).concat(eval(response.rows[0].currentA2))
                     let currentB = eval(response.rows[0].currentB1).concat(eval(response.rows[0].currentB2))
@@ -213,7 +229,9 @@ export default {
                     this.chartDataCurrent = {
                         currentFFT_A: currentA,
                         currentFFT_B: currentB,
-                        currentFFT_C: currentC
+                        currentFFT_C: currentC,
+                        chartTitile: '电流',
+                        legend: ['A相', 'B相', 'C相']
                     }
                 });
                 // 获取电压数据
@@ -226,6 +244,8 @@ export default {
                         voltage_A: null,
                         voltage_B: null,
                         voltage_C: null,
+                        chartTitile: null,
+                        legend: null
                     }
                     // 获取信息
                     let currentA = eval(response.rows[0].voltageA1).concat(eval(response.rows[0].voltageA2))
@@ -234,7 +254,9 @@ export default {
                     this.chartDataVoltage = {
                         voltage_A: currentA,
                         voltage_B: currentB,
-                        voltage_C: currentC
+                        voltage_C: currentC,
+                        chartTitile: '电压',
+                        legend: ['A相', 'B相', 'C相']
                     }
                 });
                 // 获取功率因数数据
@@ -259,6 +281,8 @@ export default {
                         harmonicCurrent_A: null,
                         harmonicCurrent_B: null,
                         harmonicCurrent_C: null,
+                        chartTitile: null,
+                        legend: null
                     }
                     // 获取信息
                     this.chartDataHarmonicCurrent = {
@@ -274,6 +298,8 @@ export default {
                         harmonicVoltage_A: null,
                         harmonicVoltage_B: null,
                         harmonicVoltage_C: null,
+                        chartTitile: null,
+                        legend: null
                     }
                     // 获取信息
                     this.chartDataHarmonicVoltage = {

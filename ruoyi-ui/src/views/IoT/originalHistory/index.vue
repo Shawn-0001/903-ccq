@@ -5,9 +5,9 @@
             <el-form-item label="UUID" prop="UUID">
                 <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
-            <el-form-item label="时间戳" prop="timestamp">
+            <!-- <el-form-item label="时间戳" prop="timestamp">
                 <el-input v-model="queryParams.timestamp" placeholder="" clearable @keyup.enter.native="handleQuery" />
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="设备ID" prop="deviceId">
                 <el-input v-model="queryParams.deviceId" placeholder="" clearable @keyup.enter.native="handleQuery" />
             </el-form-item>
@@ -42,7 +42,7 @@
             <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :data="originalHistoryList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="originalHistoryList">
             <!-- <el-table-column type="selection" width="55" align="center" /> -->
             <el-table-column label="自增序列" align="center" prop="id" />
             <el-table-column label="每条数据的UUID" align="center" prop="uuid" show-overflow-tooltip min-width="150px" />

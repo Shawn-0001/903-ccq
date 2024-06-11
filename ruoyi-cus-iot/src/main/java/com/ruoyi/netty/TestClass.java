@@ -1,5 +1,8 @@
 package com.ruoyi.netty;
 
+import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.core.redis.RedisCache;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.iot.domain.CusIotVoltage;
 import com.ruoyi.iot.service.*;
@@ -28,6 +31,26 @@ public class TestClass {
     private ICusIotVoltageHarmonicService cusIotVoltageHarmonicService;
     @Autowired
     private ICusIotCurrentHarmonicService cusIotCurrentHarmonicService;
+
+    @Autowired
+    private RedisCache redisCache;
+
+
+    /**
+     * 设置cache key
+     *
+     * @param configKey 参数键
+     * @return 缓存键key
+     */
+    private String getCacheKey(String configKey) {
+        return CacheConstants.SYS_CONFIG_KEY + configKey;
+    }
+
+    @Test
+    public void testConfigKey() {
+        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey("cus.current.multiple")));
+        System.out.println(configValue);
+    }
 
     @Test
     public void testByteLength() {
@@ -82,8 +105,8 @@ public class TestClass {
     @Test
     public void testFFT() {
 
-        float[] data = {0.023f, 0.0095f, 0.002f, 0.0115f, 0.026f, 0.0435f, 0.046f, 0.249f, 0.8085f, 0.9455f, 0.7155f, 0.473f, 0.25f, 0.1715f, 0.283f, 0.3255f, 0.2405f, 0.16f, 0.1845f, 0.1945f, 0.2095f, 0.2215f, 0.23f, 0.2415f, 0.2525f, 0.26f, 0.2685f, 0.279f, 0.3275f, 0.785f, 1.133f, 1.162f, 1.0575f, 0.788f, 0.5155f, 0.4885f, 0.442f, 0.3235f, 0.3145f, 0.3195f, 0.3285f, 0.334f, 0.3305f, 0.328f, 0.3255f, 0.322f, 0.3145f, 0.3055f, 0.2935f, 0.282f, 0.2705f, 0.261f, 0.249f, 0.239f, 0.2245f, 0.21f, 0.1925f, 0.175f, 0.157f, 0.127f, 0.082f, 0.0365f, 0.0005f, -0.015f, -0.014f, 0.001f, 0.0075f, -0.0065f, -0.0205f, -0.036f, -0.041f, -0.2545f, -0.7685f, -0.947f, -0.669f, -0.426f, -0.255f, -0.1435f, -0.2835f, -0.373f, -0.2095f, -0.1535f, -0.1735f, -0.1905f, -0.213f, -0.2165f, -0.2265f, -0.238f, -0.245f, -0.2565f, -0.268f, -0.277f, -0.319f, -0.7025f, -1.147f, -1.1895f, -0.9575f, -0.7595f, -0.5355f, -0.4045f, -0.4035f, -0.316f, -0.3165f, -0.322f, -0.327f, -0.3355f, -0.334f, -0.33f, -0.3275f, -0.322f, -0.317f, -0.3085f, -0.2995f, -0.2895f, -0.2785f, -0.2685f, -0.256f, -0.245f, -0.2295f, -0.2155f, -0.199f, -0.1815f, -0.164f, -0.136f, -0.093f, -0.0475f, -0.0085f, 0.0085f,};
-        FloatFFT_1D dft = new FloatFFT_1D(128);
+        float[] data = {9f, 192f, 366f, 533f, 652f, 715f, 803f, 881f, 988f, 1047f, 1138f, 1169f, 1279f, 1368f, 1403f, 1526f, 1616f, 1652f, 1769f, 1821f, 1844f, 1894f, 1917f, 1916f, 1962f, 1964f, 2003f, 2018f, 2084f, 2099f, 2188f, 2239f, 2288f, 2334f, 2395f, 2456f, 2509f, 2589f, 2643f, 2716f, 2793f, 2845f, 2869f, 2930f, 2964f, 3042f, 3059f, 3141f, 3158f, 3198f, 3203f, 3163f, 3118f, 3054f, 2998f, 2944f, 2842f, 2697f, 2589f, 2458f, 2311f, 2103f, 1885f, 1658f, 1427f, 1174f, 908f, 639f, 421f, 200f, -9f, -207f, -380f, -505f, -617f, -738f, -808f, -887f, -945f, -1040f, -1113f, -1197f, -1276f, -1355f, -1458f, -1545f, -1600f, -1673f, -1776f, -1831f, -1850f, -1895f, -1913f, -1935f, -1971f, -1977f, -2018f, -2046f, -2082f, -2157f, -2197f, -2229f, -2295f, -2354f, -2420f, -2487f, -2518f, -2575f, -2612f, -2710f, -2776f, -2867f, -2858f, -2910f, -2989f, -3026f, -3069f, -3083f, -3153f, -3168f, -3175f, -3136f, -3067f, -3049f, -2972f, -2895f, -2818f, -2700f, -2563f, -2425f, -2256f, -2062f, -1884f, -1652f, -1384f, -1138f, -869f, -609f, -344f, -129};
+        FloatFFT_1D dft = new FloatFFT_1D(140);
         System.out.println("----------转换前----------");
         System.out.println(Arrays.toString(data));
 

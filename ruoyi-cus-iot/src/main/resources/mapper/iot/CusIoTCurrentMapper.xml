@@ -25,18 +25,22 @@
     </resultMap>
 
     <sql id="selectCusIoTCurrentVo">
-        select id, uuid, timestamp, device_id, current_a_1, current_a_2, current_a_fft, current_b_1, current_b_2, current_b_fft, current_c_1,
-        current_c_2, current_c_fft, create_by, create_time, update_by, update_time from cus_iot_current
+        select id, uuid, timestamp, device_id, current_a_1, current_a_2, current_a_fft, current_b_1, current_b_2, current_b_fft,
+        current_c_1, current_c_2, current_c_fft, create_by, create_time, update_by, update_time from cus_iot_current
     </sql>
 
     <select id="selectCusIoTCurrentList" parameterType="CusIoTCurrent" resultMap="CusIoTCurrentResult">
         <include refid="selectCusIoTCurrentVo"/>
         <where>
-            <if test="UUID != null ">and uuid = #{UUID}</if>
-            <if test="timestamp != null ">and timestamp = #{timestamp}</if>
-            <if test="deviceId != null ">and device_id = #{deviceId}</if>
+            <if test="UUID != null and UUID != ''">and uuid = #{UUID}</if>
+            <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
                 and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+            <!--如果查询条件为空，那么数据库count（*）非常慢， 70w数据60秒， 增加条件 uuid != ‘’进行count（*）， 70w数据， 0.3秒-->
+            <if test=" !(UUID != null and UUID != '') and !(deviceId != null  and deviceId != '') and
+            !(params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != '')">
+                and uuid != ''
             </if>
         </where>
         order by id desc

@@ -1,5 +1,8 @@
 package com.ruoyi.netty;
 
+import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.core.redis.RedisCache;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.iot.domain.*;
@@ -37,9 +40,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
     private ICusIotDeviceListService cusIotDeviceListService;
     @Autowired
     private ICusIotOriginalHistoryService cusIotOriginalHistoryService;
+    @Autowired
+    private RedisCache redisCache;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+
+        // 6. 电流放大倍数： 读取系统参数值：cus.current.multiple
+        BigDecimal currentMultiple = new BigDecimal(Convert.toStr(redisCache.getCacheObject(CacheConstants.SYS_CONFIG_KEY + "cus.current.multiple")));
+
         // 初始化, 生成UUID, e.g. ef21517ac0f94db4b464f7bf61f6b656
         String currentUUID = IdUtils.fastSimpleUUID();
 
@@ -124,8 +133,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             count = 4;
             // 在字节数组中截取该段的字节
             byte[] segment_2 = subBytes(bytes, begin, count);
-            // 字节转int
-            int timestamp = bytesToInt(segment_2);
+            // 字节转int, 高位在前， 与其他的不同
+            int timestamp = bytesToIntHigh(segment_2);
             // 所有的表都需要设置这个timestamp字段
             // 电流数据
             cusIoTCurrent.setTimestamp((long) timestamp);
@@ -171,7 +180,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             cusIotOriginalHistory.setDeviceId(deviceId);
             // 判断ID是否存在
             List<CusIotDeviceList> devices = cusIotDeviceListService.selectCusIotDeviceListList(cusIotDeviceList);
-            if(devices.size() > 0){
+            if (devices.size() > 0) {
                 // 设备列表
                 cusIotDeviceList.setTimestamp((long) timestamp);
                 // 设备列表IP
@@ -180,7 +189,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 cusIotDeviceList.setId(devices.get(0).getId());
                 cusIotDeviceList.setLatestUUID(currentUUID);
                 cusIotDeviceListService.updateCusIotDeviceList(cusIotDeviceList);
-            }else{
+            } else {
                 // 设备列表
                 cusIotDeviceList.setTimestamp((long) timestamp);
                 // 设备列表IP
@@ -204,11 +213,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             String[] current_A_1 = new String[128];
             String[] current_A_2 = new String[128];
             // 电流要 除以2000 才是实际的值
+            // 电流经过互感器， 缩小了10倍，所以需要再放大10倍， 2000改成了200.
             BigDecimal divide2000 = new BigDecimal("2000");
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 // BigDecimal  divide()有 scale 和 precision 的概念，scale 表示小数点右边的位数，而 precision 表示精度，也就是有效数字的长度。
-                current_A_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_A_1[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentA1(Arrays.toString(current_A_1));
@@ -232,7 +242,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 周期1处理的结果， 用于绘图 cur_fft
             String[] cur_fftA1 = new String[realPartA1.length];
             for (int i = 0; i < realPartA1.length; i++) {
-                BigDecimal fftA1Value = new BigDecimal(Math.sqrt(Math.pow(realPartA1[i], 2) + Math.pow(imaginaryPartA1[i], 2)));
+                BigDecimal fftA1Value = BigDecimal.valueOf(Math.sqrt(Math.pow(realPartA1[i], 2) + Math.pow(imaginaryPartA1[i], 2)));
                 // 保留4位小数
                 cur_fftA1[i] = fftA1Value.setScale(4, RoundingMode.HALF_UP).toPlainString();
             }
@@ -240,7 +250,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 周期2开始：
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
-                current_A_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_A_2[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentA2(Arrays.toString(current_A_2));
@@ -256,7 +266,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 // 电流要 除以2000 才是实际的值
                 // BigDecimal  divide()有 scale 和 precision 的概念，scale 表示小数点右边的位数，而 precision 表示精度，也就是有效数字的长度。
-                current_B_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_B_1[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentB1(Arrays.toString(current_B_1));
@@ -290,7 +300,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 // 电流要 除以2000 才是实际的值
                 // BigDecimal  divide()有 scale 和 precision 的概念，scale 表示小数点右边的位数，而 precision 表示精度，也就是有效数字的长度。
-                current_B_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_B_2[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentB2(Arrays.toString(current_B_2));
@@ -306,7 +316,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 // 电流要 除以2000 才是实际的值
                 // BigDecimal  divide()有 scale 和 precision 的概念，scale 表示小数点右边的位数，而 precision 表示精度，也就是有效数字的长度。
-                current_C_1[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_C_1[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentC1(Arrays.toString(current_C_1));
@@ -330,7 +340,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
             // 周期1处理的结果， 用于绘图 cur_fftC1
             String[] cur_fftC1 = new String[realPartC1.length];
             for (int i = 0; i < realPartC1.length; i++) {
-                BigDecimal fftC1 = new BigDecimal(Math.sqrt(Math.pow(realPartC1[i], 2) + Math.pow(imaginaryPartC1[i], 2)));
+                BigDecimal fftC1 = BigDecimal.valueOf(Math.sqrt(Math.pow(realPartC1[i], 2) + Math.pow(imaginaryPartC1[i], 2)));
                 // 保留4位小数
                 cur_fftC1[i] = fftC1.setScale(4, RoundingMode.HALF_UP).toPlainString();
             }
@@ -340,7 +350,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 byte[] segment_i = subBytes(bytes, begin, count);
                 // 电流要 除以2000 才是实际的值
                 // BigDecimal  divide()有 scale 和 precision 的概念，scale 表示小数点右边的位数，而 precision 表示精度，也就是有效数字的长度。
-                current_C_2[i] = new BigDecimal(bytesToShort(segment_i)).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
+                current_C_2[i] = new BigDecimal(bytesToShort(segment_i)).multiply(currentMultiple).divide(divide2000, 4, RoundingMode.HALF_UP).toPlainString();
                 begin = begin + count;
             }
             cusIoTCurrent.setCurrentC2(Arrays.toString(current_C_2));
@@ -360,6 +370,33 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 begin = begin + count;
             }
             cusIotVoltage.setVoltageA1(Arrays.toString(voltage_A_1));
+            // Add Start 2024-04-16
+            // 电压A 周期1 进行傅里叶转换
+            DoubleFFT_1D dftVA1 = new DoubleFFT_1D(128);
+            // Bigdecimal 数组转为double数组
+            double[] voltageA1 = new double[voltage_A_1.length];
+            for (int i = 0; i < voltage_A_1.length; i++) {
+                voltageA1[i] = Double.parseDouble(voltage_A_1[i]);
+            }
+            // 傅里叶转换
+            dftVA1.realForward(voltageA1);
+            // 源数据被改变， 获取虚数和实数两个部分
+            double[] realPartVA1 = new double[voltageA1.length / 2];
+            double[] imaginaryPartVA1 = new double[voltageA1.length / 2];
+            for (int i = 0; i < voltageA1.length / 2; i++) {
+                realPartVA1[i] = voltageA1[2 * i];
+                imaginaryPartVA1[i] = voltageA1[2 * i + 1];
+            }
+            // 结果取模： （实数平方+ 虚数平方）开根号：
+            // 周期1处理的结果， 用于绘图 vol_fftA1
+            String[] vol_fftA1 = new String[realPartVA1.length];
+            for (int i = 0; i < realPartVA1.length; i++) {
+                BigDecimal fftVA1 = BigDecimal.valueOf(Math.sqrt(Math.pow(realPartVA1[i], 2) + Math.pow(imaginaryPartVA1[i], 2)));
+                // 保留4位小数
+                vol_fftA1[i] = fftVA1.setScale(4, RoundingMode.HALF_UP).toPlainString();
+            }
+            cusIotVoltage.setVoltageAFFT(Arrays.toString(vol_fftA1));
+            // Add end 2024-04-16
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
@@ -380,6 +417,33 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 begin = begin + count;
             }
             cusIotVoltage.setVoltageB1(Arrays.toString(voltage_B_1));
+            // Add Start 2024-04-16
+            // 电压B 周期1 进行傅里叶转换
+            DoubleFFT_1D dftVB1 = new DoubleFFT_1D(128);
+            // Bigdecimal 数组转为double数组
+            double[] voltageB1 = new double[voltage_B_1.length];
+            for (int i = 0; i < voltage_B_1.length; i++) {
+                voltageB1[i] = Double.parseDouble(voltage_B_1[i]);
+            }
+            // 傅里叶转换
+            dftVB1.realForward(voltageB1);
+            // 源数据被改变， 获取虚数和实数两个部分
+            double[] realPartVB1 = new double[voltageB1.length / 2];
+            double[] imaginaryPartVB1 = new double[voltageB1.length / 2];
+            for (int i = 0; i < voltageB1.length / 2; i++) {
+                realPartVB1[i] = voltageB1[2 * i];
+                imaginaryPartVB1[i] = voltageB1[2 * i + 1];
+            }
+            // 结果取模： （实数平方+ 虚数平方）开根号：
+            // 周期1处理的结果， 用于绘图 vol_fftB1
+            String[] vol_fftB1 = new String[realPartVB1.length];
+            for (int i = 0; i < realPartVB1.length; i++) {
+                BigDecimal fftVB1 = BigDecimal.valueOf(Math.sqrt(Math.pow(realPartVB1[i], 2) + Math.pow(imaginaryPartVB1[i], 2)));
+                // 保留4位小数
+                vol_fftB1[i] = fftVB1.setScale(4, RoundingMode.HALF_UP).toPlainString();
+            }
+            cusIotVoltage.setVoltageBFFT(Arrays.toString(vol_fftB1));
+            // Add end 2024-04-16
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
@@ -400,6 +464,33 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
                 begin = begin + count;
             }
             cusIotVoltage.setVoltageC1(Arrays.toString(voltage_C_1));
+            // Add Start 2024-04-16
+            // 电压C 周期1 进行傅里叶转换
+            DoubleFFT_1D dftVC1 = new DoubleFFT_1D(128);
+            // Bigdecimal 数组转为double数组
+            double[] voltageC1 = new double[voltage_C_1.length];
+            for (int i = 0; i < voltage_C_1.length; i++) {
+                voltageC1[i] = Double.parseDouble(voltage_C_1[i]);
+            }
+            // 傅里叶转换
+            dftVC1.realForward(voltageC1);
+            // 源数据被改变， 获取虚数和实数两个部分
+            double[] realPartVC1 = new double[voltageC1.length / 2];
+            double[] imaginaryPartVC1 = new double[voltageC1.length / 2];
+            for (int i = 0; i < voltageC1.length / 2; i++) {
+                realPartVC1[i] = voltageC1[2 * i];
+                imaginaryPartVC1[i] = voltageC1[2 * i + 1];
+            }
+            // 结果取模： （实数平方+ 虚数平方）开根号：
+            // 周期1处理的结果， 用于绘图 vol_fftC1
+            String[] vol_fftC1 = new String[realPartVC1.length];
+            for (int i = 0; i < realPartVC1.length; i++) {
+                BigDecimal fftVC1 = BigDecimal.valueOf(Math.sqrt(Math.pow(realPartVC1[i], 2) + Math.pow(imaginaryPartVC1[i], 2)));
+                // 保留4位小数
+                vol_fftC1[i] = fftVC1.setScale(4, RoundingMode.HALF_UP).toPlainString();
+            }
+            cusIotVoltage.setVoltageCFFT(Arrays.toString(vol_fftC1));
+            // Add end 2024-04-16
             // 第2个周期
             for (int i = 0; i < 128; i++) {
                 byte[] segment_i = subBytes(bytes, begin, count);
@@ -647,6 +738,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<Object> {
         for (int i = 0; i < 4; i++) {
             ans <<= 8;
             ans |= (a[3 - i] & 0xff);
+        }
+        return ans;
+    }
+
+    public static int bytesToIntHigh(byte[] a) {
+        int ans = 0;
+        for (int i = 0; i < 4; i++) {
+            ans <<= 8;
+            ans |= (a[i] & 0xff);
         }
         return ans;
     }

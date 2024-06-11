@@ -28,7 +28,7 @@
     <select id="selectCusIotPowerDataList" parameterType="CusIotPowerData" resultMap="CusIotPowerDataResult">
         <include refid="selectCusIotPowerDataVo"/>
         <where>
-            <if test="UUID != null ">and uuid = #{UUID}</if>
+            <if test="UUID != null and UUID != ''">and uuid = #{UUID}</if>
             <if test="timestamp != null ">and timestamp = #{timestamp}</if>
             <if test="deviceId != null  and deviceId != ''">and device_id = #{deviceId}</if>
             <if test="type != null  and type != ''">and type = #{type}</if>

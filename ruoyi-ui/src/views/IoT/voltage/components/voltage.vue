@@ -60,10 +60,13 @@ export default {
       this.chart = echarts.init(this.$el)
       this.setOptions(this.chartData)
     },
-    setOptions({ voltage_A, voltage_B, voltage_C } = {}) {
+    setOptions({ voltage_A, voltage_B, voltage_C, chartTitile, legend } = {}) {
       this.chart.setOption({
+        title: {
+          text: chartTitile
+        },
         legend: {
-          data: ['voltage_A', 'voltage_B', 'voltage_C']
+          data: legend
         },
         xAxis: {
           type: 'category',
@@ -95,7 +98,7 @@ export default {
         },
 
         series: [{
-          name: 'voltage_A',
+          name: legend[0],
           type: 'line',
           data: voltage_A,
           smooth: true,
@@ -120,7 +123,7 @@ export default {
           },
         },
         {
-          name: 'voltage_B',
+          name: legend[1],
           type: 'line',
           data: voltage_B,
           smooth: true,
@@ -148,7 +151,7 @@ export default {
           },
         },
         {
-          name: 'voltage_C',
+          name: legend[2],
           type: 'line',
           data: voltage_C,
           smooth: true,

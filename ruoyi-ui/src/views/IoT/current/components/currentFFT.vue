@@ -61,10 +61,13 @@ export default {
       this.chart = echarts.init(this.$el)
       this.setOptions(this.chartData)
     },
-    setOptions({ currentFFT_A, currentFFT_B, currentFFT_C } = {}) {
+    setOptions({ currentFFT_A, currentFFT_B, currentFFT_C, chartTitile, legend } = {}) {
       this.chart.setOption({
+        title: {
+          text: chartTitile,
+        },
         legend: {
-          data: ['currentFFT_A', 'currentFFT_B', 'currentFFT_C']
+          data: legend
         },
         xAxis: {
           type: 'category',
@@ -97,7 +100,7 @@ export default {
         },
 
         series: [{
-          name: 'currentFFT_A',
+          name: legend[0],
           type: 'line',
           data: currentFFT_A,
           showSymbol: false,
@@ -121,7 +124,7 @@ export default {
           //   },
         },
         {
-          name: 'currentFFT_B',
+          name: legend[1],
           type: 'line',
           data: currentFFT_B,
           showSymbol: false,
@@ -141,7 +144,7 @@ export default {
           },
         },
         {
-          name: 'currentFFT_C',
+          name: legend[2],
           type: 'line',
           data: currentFFT_C,
           showSymbol: false,

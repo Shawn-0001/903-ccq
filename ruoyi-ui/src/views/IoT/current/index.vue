@@ -4,9 +4,9 @@
       <el-form-item label="UUID" prop="UUID">
         <el-input v-model="queryParams.UUID" placeholder="" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
-      <el-form-item label="时间戳" prop="timestamp">
+      <!-- <el-form-item label="时间戳" prop="timestamp">
         <el-input v-model="queryParams.timestamp" placeholder="" clearable @keyup.enter.native="handleQuery" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="设备ID" prop="deviceId">
         <el-input v-model="queryParams.deviceId" placeholder="" clearable @keyup.enter.native="handleQuery" />
       </el-form-item>
@@ -123,7 +123,7 @@
 </template>
 
 <script>
-import { listCurrent, getCurrent, delCurrent, addCurrent, updateCurrent } from "@/api/IoT/current";
+import { listCurrent } from "@/api/IoT/current";
 
 export default {
   name: "Current",
@@ -186,34 +186,6 @@ export default {
         this.loading = false;
       });
     },
-    // 取消按钮
-    // cancel() {
-    //   this.open = false;
-    //   this.reset();
-    // },
-    // 表单重置
-    // reset() {
-    //   this.form = {
-    //     id: null,
-    //     uuid: null,
-    //     timestamp: null,
-    //     deviceId: null,
-    //     currentA1: null,
-    //     currentA2: null,
-    //     currentAFFT: null,
-    //     currentB1: null,
-    //     currentB2: null,
-    //     currentBFFT: null,
-    //     currentC1: null,
-    //     currentC2: null,
-    //     currentCFFT: null,
-    //     createBy: null,
-    //     createTime: null,
-    //     updateBy: null,
-    //     updateTime: null
-    //   };
-    //   this.resetForm("form");
-    // },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -231,52 +203,6 @@ export default {
       this.single = selection.length !== 1
       this.multiple = !selection.length
     },
-    /** 新增按钮操作 */
-    // handleAdd() {
-    //   this.reset();
-    //   this.open = true;
-    //   this.title = "添加电流数据";
-    // },
-    /** 修改按钮操作 */
-    // handleUpdate(row) {
-    //   this.reset();
-    //   const id = row.id || this.ids
-    //   getCurrent(id).then(response => {
-    //     this.form = response.data;
-    //     this.open = true;
-    //     this.title = "修改电流数据";
-    //   });
-    // },
-    /** 提交按钮 */
-    // submitForm() {
-    //   this.$refs["form"].validate(valid => {
-    //     if (valid) {
-    //       if (this.form.id != null) {
-    //         updateCurrent(this.form).then(response => {
-    //           this.$modal.msgSuccess("修改成功");
-    //           this.open = false;
-    //           this.getList();
-    //         });
-    //       } else {
-    //         addCurrent(this.form).then(response => {
-    //           this.$modal.msgSuccess("新增成功");
-    //           this.open = false;
-    //           this.getList();
-    //         });
-    //       }
-    //     }
-    //   });
-    // },
-    /** 删除按钮操作 */
-    // handleDelete(row) {
-    //   const ids = row.id || this.ids;
-    //   this.$modal.confirm('是否确认删除电流数据编号为"' + ids + '"的数据项？').then(function () {
-    //     return delCurrent(ids);
-    //   }).then(() => {
-    //     this.getList();
-    //     this.$modal.msgSuccess("删除成功");
-    //   }).catch(() => { });
-    // },
     /** 导出按钮操作 */
     handleExport() {
       this.download('IoT/current/export', {
